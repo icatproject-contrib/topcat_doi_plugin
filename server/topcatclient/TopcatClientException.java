@@ -4,7 +4,7 @@ import javax.ws.rs.core.Response;
 
 import javax.json.Json;
 
-public class TopcatClientException extends Exception implements ResponseProducer {
+public class TopcatClientException extends Exception {
     
     private String message;
     protected int status;

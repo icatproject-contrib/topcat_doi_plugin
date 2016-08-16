@@ -7,7 +7,7 @@ import javax.json.JsonValue;
 
 import java.net.URL;
 import java.net.URLEncoder;
-import java.net.HttpURLConnection;
+import javax.net.ssl.HttpsURLConnection;
 
 import java.io.DataOutputStream;
 import java.io.BufferedReader;
@@ -38,6 +38,30 @@ class RestClient {
 		return send("GET", offset, null);
 	}
 
+	public JsonValue post(String offset, Map<String, String> params) throws TopcatClientException {
+		return send("POST", offset, params);
+	}
+
+	public JsonValue post(String offset) throws TopcatClientException {
+		return send("POST", offset, null);
+	}
+
+	public JsonValue put(String offset, Map<String, String> params) throws TopcatClientException {
+		return send("PUT", offset, params);
+	}
+
+	public JsonValue put(String offset) throws TopcatClientException {
+		return send("PUT", offset, null);
+	}
+
+	public JsonValue delete(String offset, Map<String, String> params) throws TopcatClientException {
+		return send("DELETE", offset, params);
+	}
+
+	public JsonValue delete(String offset) throws TopcatClientException {
+		return send("DELETE", offset, null);
+	}
+
 	private JsonValue send(String method, String offset, Map<String, String> params) throws TopcatClientException {
 		StringBuilder url = new StringBuilder(this.url + "/" + offset);
 		StringBuilder data = new StringBuilder();
@@ -56,28 +80,24 @@ class RestClient {
 			url.append(data);
 		}
 
-		logger.info(method + ": " + url.toString());
-
-		HttpURLConnection connection = null;
+		HttpsURLConnection connection = null;
 
 		try {
 		    //Create connection
-		    connection = (HttpURLConnection) (new URL(url.toString())).openConnection();
+		    connection = (HttpsURLConnection) (new URL(url.toString())).openConnection();
 		    connection.setRequestMethod(method);
+    		connection.setUseCaches(false);
+    		connection.setDoInput(true);
 
-		    if(method.equals("POST") || method.equals("PUT")){
+    		if(method.equals("POST") || method.equals("PUT")){
+    			connection.setDoOutput(true);
     			connection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
     			connection.setRequestProperty("Content-Length", Integer.toString(data.toString().getBytes().length));
-    		}
 
-    		connection.setUseCaches(false);
-    		connection.setDoOutput(true);
-
-    		DataOutputStream request = new DataOutputStream(connection.getOutputStream());
-    		if(method.equals("POST") || method.equals("PUT")){
-    			request.writeBytes(data.toString());
-    		}
-    		request.close();
+	    		DataOutputStream request = new DataOutputStream(connection.getOutputStream());
+	    		request.writeBytes(data.toString());
+	    		request.close();
+	    	}
 
 		    BufferedReader response = new BufferedReader(new InputStreamReader(connection.getInputStream()));
 		    StringBuilder out = new StringBuilder();
@@ -89,7 +109,7 @@ class RestClient {
 
 		    return parseJson(out.toString());
     	} catch (Exception e) {
-			throw new TopcatClientException(e.getMessage());
+			throw new TopcatClientException(e.toString());
 		} finally {
 			if (connection != null) {
 				connection.disconnect();
@@ -98,7 +118,7 @@ class RestClient {
 	}
 
 	private JsonValue parseJson(String value){
-		return (JsonValue) Json.createReader(new ByteArrayInputStream(("{value:"+value+"}").getBytes(StandardCharsets.UTF_8))).readObject().get("value");
+		return (JsonValue) Json.createReader(new ByteArrayInputStream(("{\"value\":"+value+"}").getBytes(StandardCharsets.UTF_8))).readObject().get("value");
 	}
 
 }

@@ -23,9 +23,12 @@ public class TopcatClient {
 		return ((JsonObject) restClient.get("version")).getString("value");
 	}
 
-	// public getCart(){
+	public JsonObject getCart(String facilityName) throws TopcatClientException {
+		return (JsonObject) restClient.get("user/cart/" + facilityName);
+	}
 
-	// }
-
+	public JsonObject deleteCartItems(String facilityName)  throws TopcatClientException {
+		return (JsonObject) restClient.delete("cart/" + facilityName + "/cartItems");
+	}
 
 }

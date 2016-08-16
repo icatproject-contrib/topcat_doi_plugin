@@ -46,18 +46,6 @@ public class RestApi {
         return Response.ok().entity("\"ok\"").build();
     }
 
-    @GET
-    @Path("/version")
-    @Produces({MediaType.APPLICATION_JSON})
-    public Response version() {
-        TopcatClient topcatClient = new TopcatClient("https://localhost:8181");
-        try {
-            return Response.ok().entity("\"" + topcatClient.getVersion() + "\"").build();
-        } catch(TopcatClientException e){
-            return e.toResponse();
-        }
-    }
-
     // @POST
     // @Path("/makeDataPublic")
     // @Produces({MediaType.APPLICATION_JSON})
