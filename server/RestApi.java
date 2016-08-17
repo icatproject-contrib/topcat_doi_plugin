@@ -56,22 +56,6 @@ public class RestApi {
         return Response.ok().entity("\"ok\"").build();
     }
 
-    // <?xml version="1.0" encoding="UTF-8"?>
-    // <resource xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://datacite.org/schema/kernel-4" xsi:schemaLocation="http://datacite.org/schema/kernel-4 http://schema.datacite.org/meta/kernel-4/metadata.xsd">
-    //     <identifier identifierType="DOI">#{doi}</identifier>
-    //     <creators>
-    //         <creator>
-    //             <creatorName>Salt, Jody</creatorName>
-    //         </creator>
-    //     </creators>
-    //     <titles>
-    //         <title xml:lang="en-gb">Harwell Rounders</title>
-    //     </titles>
-    //     <publisher>Harwell RecSoc</publisher>
-    //     <publicationYear>2016</publicationYear>
-    //     <resourceType resourceTypeGeneral="Dataset">Fixtures and Results</resourceType>
-    // </resource>
-
     @GET
     @Path("/makeDataPublic")
     @Produces({MediaType.APPLICATION_JSON})
