@@ -64,20 +64,20 @@ class RestClient {
 
 	private JsonValue send(String method, String offset, Map<String, String> params) throws TopcatClientException {
 		StringBuilder url = new StringBuilder(this.url + "/" + offset);
-		StringBuilder data = new StringBuilder();
+		StringBuilder encodedParams = new StringBuilder();
 
 		if(params != null){
 			for(Map.Entry<String, String> entry : params.entrySet()) {
-				if(data.length() > 0){
-					data.append("&");
+				if(encodedParams.length() > 0){
+					encodedParams.append("&");
 				}
-				data.append(URLEncoder.encode(entry.getKey()) + "=" + URLEncoder.encode(entry.getValue()));
+				encodedParams.append(URLEncoder.encode(entry.getKey()) + "=" + URLEncoder.encode(entry.getValue()));
 			}
 		}
 
-		if((method.equals("GET") || method.equals("DELETE")) && data.length() > 0){
+		if((method.equals("GET") || method.equals("DELETE")) && encodedParams.length() > 0){
 			url.append("?");
-			url.append(data);
+			url.append(encodedParams);
 		}
 
 		HttpsURLConnection connection = null;
@@ -92,10 +92,10 @@ class RestClient {
     		if(method.equals("POST") || method.equals("PUT")){
     			connection.setDoOutput(true);
     			connection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
-    			connection.setRequestProperty("Content-Length", Integer.toString(data.toString().getBytes().length));
+    			connection.setRequestProperty("Content-Length", Integer.toString(encodedParams.toString().getBytes().length));
 
 	    		DataOutputStream request = new DataOutputStream(connection.getOutputStream());
-	    		request.writeBytes(data.toString());
+	    		request.writeBytes(encodedParams.toString());
 	    		request.close();
 	    	}
 
