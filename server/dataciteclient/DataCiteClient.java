@@ -34,7 +34,7 @@ public class DataCiteClient {
 	}
 
 	public void mintDoi(String doi, String landingPageUrl) throws DataCiteClientException {
-		httpClient.post("metadata", createHeaders("text/plain;charset=UTF-8"), doi + "\n" + landingPageUrl);
+		httpClient.post("doi", createHeaders("text/plain;charset=UTF-8"), "doi=" + doi + "\nurl=" + landingPageUrl);
 	}
 
 	private Map<String, String> createHeaders(String contentType){

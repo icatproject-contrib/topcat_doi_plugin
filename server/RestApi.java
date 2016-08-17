@@ -111,6 +111,8 @@ public class RestApi {
 
             dataCiteClient.setDoiMetadata(document);
 
+            dataCiteClient.mintDoi("10.5286/topcat/sciency-stuff", "http://www.scd.stfc.ac.uk/SCD/organisation/42436.aspx");
+
             return Response.ok().entity("\"ok\"").build();
         } catch(Exception e){
             return Response.ok().entity(e.toString()).build();
