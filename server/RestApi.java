@@ -132,19 +132,5 @@ public class RestApi {
             return Response.ok().entity(e.toString()).build();
         }
     }
-
-    private String documentToString(Document document){
-        try {
-           DOMSource domSource = new DOMSource(document);
-           StringWriter writer = new StringWriter();
-           StreamResult result = new StreamResult(writer);
-           TransformerFactory transformerFactory = TransformerFactory.newInstance();
-           Transformer transformer = transformerFactory.newTransformer();
-           transformer.transform(domSource, result);
-           return writer.toString();
-        } catch(TransformerException ex) {
-           return null;
-        }
-    }
     
 }
