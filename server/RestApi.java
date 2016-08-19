@@ -78,7 +78,7 @@ public class RestApi {
     @POST
     @Path("/makePublicDataCollection")
     @Produces({MediaType.APPLICATION_JSON})
-    public Response makeDataPublic(
+    public Response makePublicDataCollection(
             @FormParam("icatUrl") String icatUrl,
             @FormParam("sessionId") String sessionId,
             @FormParam("datasetIds") String datasetIds,
@@ -94,6 +94,24 @@ public class RestApi {
 
             return Response.ok().entity(Json.createObjectBuilder().add("id", dataCollection.getId()).add("doi", doi).build().toString()).build();
         } catch(Exception e){
+            return Response.status(400).entity(Json.createObjectBuilder().add("message", e.toString()).build().toString()).build();
+        }
+    }
+
+    @POST
+    @Path("/makeEntityPublic")
+    @Produces({MediaType.APPLICATION_JSON})
+    public Response makeEntityPublic(
+        @FormParam("icatUrl") String icatUrl,
+        @FormParam("sessionId") String sessionId,
+        @FormParam("entityType") String entityType,
+        @FormParam("entityId") Long entityId) throws Exception {
+
+        try {
+            String doi = generateEntityDoi(entityType, entityId);
+            setEntityDoi(icatUrl, sessionId, entityType, entityId, doi);
+            return Response.ok().entity(Json.createObjectBuilder().add("doi", doi).build().toString()).build();
+         } catch(Exception e){
             return Response.status(400).entity(Json.createObjectBuilder().add("message", e.toString()).build().toString()).build();
         }
     }
@@ -225,8 +243,8 @@ public class RestApi {
         rootElement.appendChild(publicationYearElement);
 
         Element resourceTypeElement = document.createElement("resourceType");
-        resourceTypeElement.setAttribute("resourceTypeGeneral", "Dataset");
-        resourceTypeElement.appendChild(document.createTextNode("Serious Research"));
+        resourceTypeElement.setAttribute("resourceTypeGeneral", resourceTypeGeneral);
+        resourceTypeElement.appendChild(document.createTextNode(resourceType));
         rootElement.appendChild(resourceTypeElement);
 
         DataCiteClient dataCiteClient = new DataCiteClient();

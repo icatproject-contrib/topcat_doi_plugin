@@ -29,7 +29,22 @@
     			}
     		});
 
-
+            this.makeEntityPublic = helpers.overload({
+                'string, number, object': function(entityType, entityId, options){
+                    return this.post('makeEntityPublic', {
+                        icatUrl: facility.config().icatUrl,
+                        sessionId: facility.icat().session().sessionId,
+                        entityType: entityType,
+                        entityId: entityId
+                    }, options);
+                },
+                'promise, string, number': function(timeout, entityType, entityId){
+                    return this.makeEntityPublic(entityType, entityId, {timeout: timeout});
+                },
+                'string, number': function(entityType, entityId){
+                    return this.makeEntityPublic(entityType, entityId, {});
+                }
+            });
 
     		helpers.generateRestMethods(this, tc.config().topcatUrl + "/topcat_doi_plugin/api/");
 
