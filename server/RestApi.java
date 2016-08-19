@@ -91,8 +91,11 @@ public class RestApi {
             List<Long> datafileIdList = parseIds(datafileIds);
 
             DataCollection dataCollection = createDataCollection(icatUrl, sessionId, datasetIdList, datafileIdList);
-            setEntityDoi(icatUrl, sessionId, "DataCollection", dataCollection.getId());
+            String doi = generateEntityDoi("DataCollection", dataCollection.getId());
+            setEntityDoi(icatUrl, sessionId, "DataCollection", dataCollection.getId(), doi);
 
+            
+            
             return Response.ok().entity("\"ok\"").build();
         } catch(Exception e){
             return Response.status(400).entity(Json.createObjectBuilder().add("message", e.toString()).build().toString()).build();
@@ -111,13 +114,8 @@ public class RestApi {
         return out;
     }
 
-    private void setEntityDoi(String icatUrl, String sessionId, String entityType, Long entityId) throws Exception{
+    private void setEntityDoi(String icatUrl, String sessionId, String entityType, Long entityId, String doi) throws Exception{
         ICAT icat = createIcat(icatUrl);
-        Properties properties = new Properties();
-        String doiNamespace = properties.getProperty("doiNamespace");
-
-        String doi = doiNamespace + "/" + entityType + "/" + entityId;
-
 
         if(entityType.equals("Investigation")){
             Investigation investigation = (Investigation) icat.get(sessionId, "Investigation", entityId);
@@ -136,7 +134,13 @@ public class RestApi {
             dataCollection.setDoi(doi);
             icat.update(sessionId, dataCollection);
         }
-        
+    }
+
+    private String generateEntityDoi(String entityType, Long entityId){
+        Properties properties = new Properties();
+        String doiNamespace = properties.getProperty("doiNamespace");
+        return doiNamespace + "/" + entityType + "/" + entityId;
+
     }
 
     private DataCollection createDataCollection(String icatUrl, String sessionId, List<Long> datasetIds, List<Long> datafileIds) throws Exception {
@@ -170,7 +174,16 @@ public class RestApi {
         return icatService.getICATPort();
     }
 
-    private void createDoi() throws Exception {
+    private void createDoi(
+        String doi,
+        List<String> creatorNames,
+        List<String> titles,
+        String publisher,
+        int publicationYear,
+        String resourceTypeGeneral,
+        String resourceType,
+        String landingPageUrl) throws Exception {
+
         String seedXml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><resource xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns=\"http://datacite.org/schema/kernel-4\" xsi:schemaLocation=\"http://datacite.org/schema/kernel-4 http://schema.datacite.org/meta/kernel-4/metadata.xsd\"></resource>";
 
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
@@ -178,49 +191,53 @@ public class RestApi {
     
         Document document = builder.parse(new ByteArrayInputStream(seedXml.getBytes("UTF-8")));
         
-        Element root = document.getDocumentElement();
+        Element rootElement = document.getDocumentElement();
         
-        Element identifier = document.createElement("identifier");
-        identifier.setAttribute("identifierType", "DOI");
-        identifier.appendChild(document.createTextNode("10.5286/topcat/sciency-stuff"));
-        root.appendChild(identifier);
+        Element identifierElement = document.createElement("identifier");
+        identifierElement.setAttribute("identifierType", "DOI");
+        identifierElement.appendChild(document.createTextNode(doi));
+        rootElement.appendChild(identifierElement);
 
-        Element creators = document.createElement("creators");
-        root.appendChild(creators);
+        Element creatorsElement = document.createElement("creators");
+        rootElement.appendChild(creatorsElement);
 
-        Element creator = document.createElement("creator");
-        creators.appendChild(creator);
+        for(String creatorName : creatorNames){
+            Element creatorElement = document.createElement("creator");
+            creatorsElement.appendChild(creatorElement);
 
-        Element creatorName = document.createElement("creatorName");
-        creatorName.appendChild(document.createTextNode("Dr Bob"));
-        creator.appendChild(creatorName);
+            Element creatorNameElement = document.createElement("creatorName");
+            creatorNameElement.appendChild(document.createTextNode(creatorName));
+            creatorElement.appendChild(creatorNameElement);
+        }
 
-        Element titles = document.createElement("titles");
-        root.appendChild(titles);
+        for(String title : titles){
+            Element titlesElement = document.createElement("titles");
+            rootElement.appendChild(titlesElement);
 
-        Element title = document.createElement("title");
-        title.setAttribute("xml:lang", "en-gb");
-        title.appendChild(document.createTextNode("Hello World!"));
-        titles.appendChild(title);
+            Element titleElement = document.createElement("title");
+            titleElement.setAttribute("xml:lang", "en-gb");
+            titleElement.appendChild(document.createTextNode(title));
+            titleElement.appendChild(titleElement);
+        }
 
-        Element publisher = document.createElement("publisher");
-        publisher.appendChild(document.createTextNode("The Foo Bar Institute"));
-        root.appendChild(publisher);
+        Element publisherElement = document.createElement("publisher");
+        publisherElement.appendChild(document.createTextNode(publisher));
+        rootElement.appendChild(publisherElement);
 
-        Element publicationYear = document.createElement("publicationYear");
-        publicationYear.appendChild(document.createTextNode("2016"));
-        root.appendChild(publicationYear);
+        Element publicationYearElement = document.createElement("publicationYear");
+        publicationYearElement.appendChild(document.createTextNode(Integer.toString(publicationYear)));
+        rootElement.appendChild(publicationYearElement);
 
-        Element resourceType = document.createElement("resourceType");
-        resourceType.setAttribute("resourceTypeGeneral", "Dataset");
-        resourceType.appendChild(document.createTextNode("Serious Research"));
-        root.appendChild(resourceType);
+        Element resourceTypeElement = document.createElement("resourceType");
+        resourceTypeElement.setAttribute("resourceTypeGeneral", "Dataset");
+        resourceTypeElement.appendChild(document.createTextNode("Serious Research"));
+        rootElement.appendChild(resourceTypeElement);
 
         DataCiteClient dataCiteClient = new DataCiteClient();
 
         dataCiteClient.setDoiMetadata(document);
 
-        dataCiteClient.mintDoi("10.5286/topcat/sciency-stuff", "http://www.scd.stfc.ac.uk/SCD/organisation/42436.aspx");
+        dataCiteClient.mintDoi(doi, landingPageUrl);
 
     }
     
