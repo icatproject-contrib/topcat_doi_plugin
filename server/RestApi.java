@@ -45,6 +45,7 @@ import org.icatproject.IcatExceptionType;
 import org.icatproject.DataCollection;
 import org.icatproject.Datafile;
 import org.icatproject.Dataset;
+import org.icatproject.Investigation;
 import org.icatproject.DataCollectionDatafile;
 import org.icatproject.DataCollectionDataset;
 
@@ -89,7 +90,8 @@ public class RestApi {
             List<Long> datasetIdList = parseIds(datasetIds);
             List<Long> datafileIdList = parseIds(datafileIds);
 
-            createCollection(icatUrl, sessionId, datasetIdList, datafileIdList); 
+            DataCollection dataCollection = createDataCollection(icatUrl, sessionId, datasetIdList, datafileIdList);
+            setEntityDoi(icatUrl, sessionId, "DataCollection", dataCollection.getId(), "10.5286/topcat/TEST/DataCollection/" + dataCollection.getId());
 
             return Response.ok().entity("\"ok\"").build();
         } catch(Exception e){
@@ -109,10 +111,31 @@ public class RestApi {
         return out;
     }
 
-    private DataCollection createCollection(String icatUrl, String sessionId, List<Long> datasetIds, List<Long> datafileIds) throws Exception {
-        URL icatServiceUrl = new URL(icatUrl + "/ICATService/ICAT?wsdl");
-        ICATService icatService = new ICATService(icatServiceUrl, new QName("http://icatproject.org", "ICATService"));
-        ICAT icat = icatService.getICATPort();
+    private void setEntityDoi(String icatUrl, String sessionId, String entityType, Long entityId, String doi) throws Exception{
+        ICAT icat = createIcat(icatUrl);
+
+        if(entityType.equals("Investigation")){
+            Investigation investigation = (Investigation) icat.get(sessionId, "Investigation", entityId);
+            investigation.setDoi(doi);
+            icat.update(sessionId, investigation);
+        } else if(entityType.equals("Dataset")){
+            Dataset dataset = (Dataset) icat.get(sessionId, "Dataset", entityId);
+            dataset.setDoi(doi);
+            icat.update(sessionId, dataset);
+        } else if(entityType.equals("Datafile")){
+            Datafile datafile = (Datafile) icat.get(sessionId, "Datafile", entityId);
+            datafile.setDoi(doi);
+            icat.update(sessionId, datafile);
+        } else if(entityType.equals("DataCollection")){
+            DataCollection dataCollection = (DataCollection) icat.get(sessionId, "DataCollection", entityId);
+            dataCollection.setDoi(doi);
+            icat.update(sessionId, dataCollection);
+        }
+    }
+
+    private DataCollection createDataCollection(String icatUrl, String sessionId, List<Long> datasetIds, List<Long> datafileIds) throws Exception {
+        ICAT icat = createIcat(icatUrl);
+
         DataCollection dataCollection = new DataCollection();
         dataCollection.setId(icat.create(sessionId, dataCollection));
 
@@ -133,6 +156,12 @@ public class RestApi {
         }
 
         return dataCollection;
+    }
+
+    private ICAT createIcat(String icatUrl) throws Exception {
+        URL icatServiceUrl = new URL(icatUrl + "/ICATService/ICAT?wsdl");
+        ICATService icatService = new ICATService(icatServiceUrl, new QName("http://icatproject.org", "ICATService"));
+        return icatService.getICATPort();
     }
 
     private void createDoi() throws Exception {
