@@ -91,7 +91,7 @@ public class RestApi {
             List<Long> datafileIdList = parseIds(datafileIds);
 
             DataCollection dataCollection = createDataCollection(icatUrl, sessionId, datasetIdList, datafileIdList);
-            setEntityDoi(icatUrl, sessionId, "DataCollection", dataCollection.getId(), "10.5286/topcat/TEST/DataCollection/" + dataCollection.getId());
+            setEntityDoi(icatUrl, sessionId, "DataCollection", dataCollection.getId());
 
             return Response.ok().entity("\"ok\"").build();
         } catch(Exception e){
@@ -111,8 +111,13 @@ public class RestApi {
         return out;
     }
 
-    private void setEntityDoi(String icatUrl, String sessionId, String entityType, Long entityId, String doi) throws Exception{
+    private void setEntityDoi(String icatUrl, String sessionId, String entityType, Long entityId) throws Exception{
         ICAT icat = createIcat(icatUrl);
+        Properties properties = new Properties();
+        String doiNamespace = properties.getProperty("doiNamespace");
+
+        String doi = doiNamespace + "/" + entityType + "/" + entityId;
+
 
         if(entityType.equals("Investigation")){
             Investigation investigation = (Investigation) icat.get(sessionId, "Investigation", entityId);
@@ -131,6 +136,7 @@ public class RestApi {
             dataCollection.setDoi(doi);
             icat.update(sessionId, dataCollection);
         }
+        
     }
 
     private DataCollection createDataCollection(String icatUrl, String sessionId, List<Long> datasetIds, List<Long> datafileIds) throws Exception {
