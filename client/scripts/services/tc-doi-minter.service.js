@@ -12,21 +12,20 @@
 
     	function DoiMinter(facility){
 
-    		this.makeDataPublic = helpers.overload({
-    			'array, array, array, object': function(investigationIds, datasetIds, datafileIds, options){
-    				return this.post('makeDataPublic', {
+    		this.makePublicDataCollection = helpers.overload({
+    			'array, array, object': function(datasetIds, datafileIds, options){
+    				return this.post('makePublicDataCollection', {
     					icatUrl: facility.config().icatUrl,
     					sessionId: facility.icat().session().sessionId,
-    					investigationIds: investigationIds.join(','),
     					datasetIds: datasetIds.join(','),
     					datafileIds: datafileIds.join(',')
     				}, options);
     			},
-    			'promise, array, array, array': function(timeout, investigationIds, datasetIds, datafileIds){
-    				return this.makeDataPublic(investigationIds, datasetIds, datafileIds, {timeout: timeout});
+    			'promise, array, array': function(timeout, datasetIds, datafileIds){
+    				return this.makePublicDataCollection(datasetIds, datafileIds, {timeout: timeout});
     			},
-    			'array, array, array': function(investigationIds, datasetIds, datafileIds){
-    				return this.makeDataPublic(investigationIds, datasetIds, datafileIds, {});
+    			'array, array': function(datasetIds, datafileIds){
+    				return this.makePublicDataCollection(datasetIds, datafileIds, {});
     			}
     		});
 

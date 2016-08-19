@@ -76,17 +76,15 @@ public class RestApi {
     }
 
     @POST
-    @Path("/makeDataPublic")
+    @Path("/makePublicDataCollection")
     @Produces({MediaType.APPLICATION_JSON})
     public Response makeDataPublic(
             @FormParam("icatUrl") String icatUrl,
             @FormParam("sessionId") String sessionId,
-            @FormParam("investigationIds") String investigationIds,
             @FormParam("datasetIds") String datasetIds,
             @FormParam("datafileIds") String datafileIds) {
 
         try {
-            List<Long> investigationIdList = parseIds(investigationIds);
             List<Long> datasetIdList = parseIds(datasetIds);
             List<Long> datafileIdList = parseIds(datafileIds);
 
@@ -94,9 +92,7 @@ public class RestApi {
             String doi = generateEntityDoi("DataCollection", dataCollection.getId());
             setEntityDoi(icatUrl, sessionId, "DataCollection", dataCollection.getId(), doi);
 
-            
-            
-            return Response.ok().entity("\"ok\"").build();
+            return Response.ok().entity(Json.createObjectBuilder().add("id", dataCollection.getId()).add("doi", doi).build().toString()).build();
         } catch(Exception e){
             return Response.status(400).entity(Json.createObjectBuilder().add("message", e.toString()).build().toString()).build();
         }
