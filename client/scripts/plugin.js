@@ -13,7 +13,21 @@ registerTopcatPlugin(function(pluginUrl){
 		],
 
 		configSchema: {
-			//see https://github.com/icatproject/topcat/blob/master/yo/app/scripts/services/object-validator.service.js
+			facilities: {
+				_item: {
+					myDois: {
+						gridOptions: {
+							columnDefs: {
+								_type: 'array',
+								_item: {
+									field: {_type: 'string'},
+									title: { _type: 'string', _mandatory: false },
+								}
+							}
+						}
+					}
+				}
+			}
 		},
 
 		setup: function($uibModal, tc, tcDoiMinter){
@@ -28,7 +42,8 @@ registerTopcatPlugin(function(pluginUrl){
 
 			tc.ui().registerMainTab('my-dois', pluginUrl + 'views/my-dois.html', {
 				insertAfter: 'my-data',
-				controller: 'MyDoisController as myDoisController'
+				controller: 'MyDoisController as myDoisController',
+				multiFacility: true
 			});
 
 			var doiMinters = {};

@@ -5,6 +5,25 @@
         <div class="col-sm-12">
             <h1>My DOIs</h1>
 
+            <div ng-show="myDoisController.facilities.length > 1">
+                <ul class="nav nav-tabs nav-tabs-head">
+                    <li ng-repeat="facility in myDoisController.facilities" ng-class="{active: facility.config().name == $state.params.facilityName}">
+                        <a ui-sref="home.my-dois({facilityName: facility.config().name})">{{facility.config().title}}</a>
+                    </li>
+                </ul>
+                <br>
+            </div>
+
+            <div ng-if="myDoisController.isScroll" ui-grid="myDoisController.gridOptions" ui-grid-infinite-scroll ui-grid-selection ui-grid-selection ui-grid-resize-columns  class="my-data-grid" take-up-remaining-height>
+                <div class="no-rows row" ng-show="!myDoisController.isLoading && myDoisController.gridOptions.data.length == 0">
+                    <div class="col-xs-12 empty-message" translate="MY_DATA.NO_RESULTS"></div>
+                </div>
+                <div class="no-rows row" ng-show="myDoisController.isLoading">
+                    <div class="col-xs-12 empty-message" translate="MY_DATA.LOADING"></div>
+                </div>
+            </div>
+
         </div>
     </div>
 </div>
+
