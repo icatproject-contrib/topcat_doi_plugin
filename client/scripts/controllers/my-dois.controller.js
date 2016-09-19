@@ -5,7 +5,7 @@
 
     var app = angular.module('topcat');
 
-    app.controller('MyDoisController', function($state, tc, helpers){
+    app.controller('MyDoisController', function($state, $q, tc, helpers){
         this.facilities = tc.userFacilities();
         if($state.params.facilityName == ''){
           $state.go('home.my-dois', {facilityName: this.facilities[0].config().name});
@@ -14,9 +14,12 @@
 
         var page = 1;
         var pageSize = 10;
+        var chunk = 1;
+        var chunkSize = 100;
         var facilityName = $state.params.facilityName;
         var facility = tc.facility(facilityName);
         var icat = facility.icat();
+
 
         this.isScroll = true;
         var gridOptions = _.merge({
@@ -26,44 +29,91 @@
         helpers.setupIcatGridOptions(gridOptions, "dataCollection");
         this.gridOptions = gridOptions;
 
-        function buildQuery(){
-            return [
-                "select dataCollection from",
-                "DataCollection dataCollection, ",
-
-                //all datacollections with a datafile in an investigation user's investigation
-                "dataCollection.dataCollectionDatafiles as dataCollectionDatafile, ",
-                "dataCollectionDatafile.datafile as datafile, ",
-                "datafile.dataset as datasetViaDatafile, ",
-                "datasetViaDatafile.investigation as investigationViaDatafile, ",
-                "investigationViaDatafile.investigationUsers as investigationUserViaDatafile, ",
-                "investigationUserViaDatafile.user as userViaDatafile, ",
-
-                //all datacollections with a dataset in an investigation user's investigation
-                "dataCollection.dataCollectionDatasets as dataCollectionDataset, ",
-                "dataCollectionDataset.dataset as dataset, ",
-                "dataset.investigation as investigationViaDataset, ",
-                "investigationViaDataset.investigationUsers as investigationUserViaDataset, ",
-                "investigationUserViaDataset.user as userViaDataset ",
-
-                //where a doi has been issued
-                //and the current user is the investigation user
-                "where ",
-                "dataCollection.doi != null ",
-                "and ",
-                "(userViaDatafile.name = :user or userViaDataset.name = :user) ",
-
-                "limit ?, ?", (page - 1) * pageSize, pageSize
-            ]
-        }
+        var resultsBuffer = [];
+        var isDuplicate = {};
 
         function getPage(){
-            return icat.query(buildQuery()).then(function(results){
-                console.log('results', results);
+            return getResults().then(function(){
+                return _.slice(resultsBuffer, (page - 1) * pageSize, pageSize);
+            });
+        }   
+
+        function getResults(){
+            getChunks().then(function(isMore){
+                if(resultsBuffer.length < page * pageSize && isMore){
+                    return getResults();
+                } else {
+                    return $q.resolved();
+                }
             });
         }
 
-        getPage();
+        function getChunks(){
+            var promises = [];
+
+            var resultCount = 0;
+
+            promises.push(icat.query(buildQuery('dataset', chunk, chunkSize)).then(function(results){
+                resultCount += results.length;
+                _.each(results, function(result){
+                    if(!isDuplicate[result.id]){
+                        resultsBuffer.push();
+                        isDuplicate[result.id] = true;
+                    }
+                });
+            }));
+
+            promises.push(icat.query(buildQuery('datafile', chunk, chunkSize)).then(function(results){
+                resultCount += results.length;
+                _.each(results, function(result){
+                    if(!isDuplicate[result.id]){
+                        resultsBuffer.push();
+                        isDuplicate[result.id] = true;
+                    }
+                });
+            }));
+
+            chunk++;
+
+            $q.all(promises).then(function(){
+                return resultCount > 0;
+            });
+        }
+
+        function buildQuery(type, page, pageSize){
+            var out = [
+                "select dataCollection from",
+                "DataCollection dataCollection, "
+            ];
+
+            if(type == 'dataset'){
+                out = _.flatten(out, [
+                    "dataCollection.dataCollectionDatasets as dataCollectionDataset, ",
+                    "dataCollectionDataset.dataset as dataset, "
+                ]]);
+            } else {
+                out = _.flatten(out, [
+                    "dataCollection.dataCollectionDatafiles as dataCollectionDatafile, ",
+                    "dataCollectionDatafile.datafile as datafile, ",
+                    "datafile.dataset as dataset, "
+                ]]);
+            }
+
+            return _.flatten([out, [
+                "dataset.investigation as investigation, ",
+                "investigation.investigationUsers as investigationUser, ",
+                "investigationUser.user as user, ",
+                "where ",
+                "dataCollection.doi != null ",
+                "and ",
+                "user.name = :user ",
+                "limit ?, ?", (page - 1) * pageSize, pageSize
+            ]]);
+        }
+
+        getPage().then(function(results){
+
+        });
 
     });
 
