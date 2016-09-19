@@ -34,16 +34,18 @@
 
         function getPage(){
             return getResults().then(function(){
-                return _.slice(resultsBuffer, (page - 1) * pageSize, pageSize);
+                var out = _.slice(resultsBuffer, (page - 1) * pageSize, pageSize);
+                page++;
+                return out;
             });
         }   
 
         function getResults(){
-            getChunks().then(function(isMore){
+            return getChunks().then(function(isMore){
                 if(resultsBuffer.length < page * pageSize && isMore){
                     return getResults();
                 } else {
-                    return $q.resolved();
+                    return $q.resolve();
                 }
             });
         }
@@ -57,7 +59,7 @@
                 resultCount += results.length;
                 _.each(results, function(result){
                     if(!isDuplicate[result.id]){
-                        resultsBuffer.push();
+                        resultsBuffer.push(result);
                         isDuplicate[result.id] = true;
                     }
                 });
@@ -67,7 +69,7 @@
                 resultCount += results.length;
                 _.each(results, function(result){
                     if(!isDuplicate[result.id]){
-                        resultsBuffer.push();
+                        resultsBuffer.push(result);
                         isDuplicate[result.id] = true;
                     }
                 });
@@ -75,7 +77,7 @@
 
             chunk++;
 
-            $q.all(promises).then(function(){
+            return $q.all(promises).then(function(){
                 return resultCount > 0;
             });
         }
@@ -87,12 +89,12 @@
             ];
 
             if(type == 'dataset'){
-                out = _.flatten(out, [
+                out = _.flatten([out, [
                     "dataCollection.dataCollectionDatasets as dataCollectionDataset, ",
                     "dataCollectionDataset.dataset as dataset, "
                 ]]);
             } else {
-                out = _.flatten(out, [
+                out = _.flatten([out, [
                     "dataCollection.dataCollectionDatafiles as dataCollectionDatafile, ",
                     "dataCollectionDatafile.datafile as datafile, ",
                     "datafile.dataset as dataset, "
@@ -102,7 +104,7 @@
             return _.flatten([out, [
                 "dataset.investigation as investigation, ",
                 "investigation.investigationUsers as investigationUser, ",
-                "investigationUser.user as user, ",
+                "investigationUser.user as user ",
                 "where ",
                 "dataCollection.doi != null ",
                 "and ",
@@ -112,7 +114,7 @@
         }
 
         getPage().then(function(results){
-
+            
         });
 
     });
