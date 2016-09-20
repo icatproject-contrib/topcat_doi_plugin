@@ -5,7 +5,7 @@
 
     var app = angular.module('topcat');
 
-    app.controller('MyDoisController', function($state, $q, tc, helpers){
+    app.controller('MyDoisController', function($state, $q, $scope, $timeout, tc, helpers){
         this.facilities = tc.userFacilities();
         if($state.params.facilityName == ''){
           $state.go('home.my-dois', {facilityName: this.facilities[0].config().name});
@@ -15,13 +15,14 @@
         var page = 1;
         var pageSize = 10;
         var chunk = 1;
-        var chunkSize = 100;
+        var chunkSize = 10;
         var facilityName = $state.params.facilityName;
         var facility = tc.facility(facilityName);
         var icat = facility.icat();
+        var gridApi;
 
-
-        this.isScroll = true;
+        var isScroll = true;
+        this.isScroll = isScroll;
         var gridOptions = _.merge({
             data: [],
             appScopeProvider: this
@@ -34,9 +35,8 @@
 
         function getPage(){
             return getResults().then(function(){
-                var out = _.slice(resultsBuffer, (page - 1) * pageSize, pageSize);
-                page++;
-                return out;
+                var offset = (page - 1) * pageSize;
+                return _.slice(resultsBuffer, offset, offset + pageSize);
             });
         }   
 
@@ -113,9 +113,71 @@
             ]]);
         }
 
-        getPage().then(function(results){
-            
-        });
+        function updateScroll(resultCount){
+            if(isScroll){
+                $timeout(function(){
+                    var isMore = resultCount == pageSize;
+                    if(page == 1) gridApi.infiniteScroll.resetScroll(false, isMore);
+                    gridApi.infiniteScroll.dataLoaded(false, isMore);
+                });
+            }
+        }
+
+
+        gridOptions.onRegisterApi = function(_gridApi) {
+            gridApi = _gridApi;
+
+            getPage().then(function(results){
+                gridOptions.data = results;
+                updateScroll(results.length);
+            });
+
+            // gridApi.core.on.filterChanged($scope, function(){
+            //     canceler.resolve();
+            //     canceler = $q.defer();
+            //     page = 1;
+            //     gridOptions.data = [];
+            //     getPage().then(function(results){
+            //         gridOptions.data = results;
+            //         updateSelections();
+            //         updateScroll(results.length);
+            //         updateTotalItems();
+            //         saveState();
+            //     });
+            // });
+
+            if(isScroll){
+                //scroll down more data callback (append data)
+                gridApi.infiniteScroll.on.needLoadMoreData($scope, function() {
+                    page++;
+                    getPage().then(function(results){
+                        _.each(results, function(result){ gridOptions.data.push(result); });
+                        if(results.length == 0) page--;
+                        updateScroll(results.length);
+                    });
+                });
+
+                //scoll up more data at top callback (prepend data)
+                gridApi.infiniteScroll.on.needLoadMoreDataTop($scope, function() {
+                    page--;
+                    getPage().then(function(results){
+                        _.each(results.reverse(), function(result){ gridOptions.data.unshift(result); });
+                        if(results.length == 0) page++;
+                        updateScroll(results.length);
+                    });
+                });
+            } else {
+                //pagination callback
+                gridApi.pagination.on.paginationChanged($scope, function(_page, _pageSize) {
+                    page = _page;
+                    pageSize = _pageSize;
+                    getPage().then(function(results){
+                        gridOptions.data = results;
+                    });
+                });
+            }
+
+        };
 
     });
 
