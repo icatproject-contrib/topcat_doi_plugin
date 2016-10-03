@@ -3,16 +3,20 @@
         <h3 class="modal-title" translate="CART.MAKE_DATA_PUBLIC.TITLE"></h3>
     </div>
     <div class="modal-body">
-    	<div ng-if="makeDataPublicController.state == 'release_date'" class="form-group">
+        <div ng-if="makeDataPublicController.state == 'basic_details'" class="form-group">
+            <label>Title</label>
+            <input type="text" ng-model="makeDataPublicController.title" class="form-control input-sm">
+        </div>
+    	<div ng-if="makeDataPublicController.state == 'basic_details'" class="form-group">
         	<label>Do you want to specify a release date?</label>
-            <div ng-if="makeDataPublicController.state == 'release_date'" class="checkbox">
+            <div ng-if="makeDataPublicController.state == 'basic_details'" class="checkbox">
     		    <label>
     		    	<input type="checkbox" ng-model="makeDataPublicController.isReleaseDate">
     		    	Yes I want to specify a release date
     		    </label>
     		</div>
     	</div>
-    	<div ng-if="makeDataPublicController.state == 'release_date' && makeDataPublicController.isReleaseDate" class="form-group">
+    	<div ng-if="makeDataPublicController.state == 'basic_details' && makeDataPublicController.isReleaseDate" class="form-group">
             <label>Release date</label>
             <p class="input-group">
                 <input

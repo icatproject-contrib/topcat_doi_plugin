@@ -5,6 +5,7 @@ registerTopcatPlugin(function(pluginUrl){
 		scripts: [
 			pluginUrl + 'scripts/controllers/make-data-public.controller.js',
 			pluginUrl + 'scripts/controllers/my-dois.controller.js',
+			pluginUrl + 'scripts/controllers/doi-landing-page.controller.js',
 			pluginUrl + 'scripts/services/tc-doi-minter.service.js'
 		],
 
@@ -13,21 +14,7 @@ registerTopcatPlugin(function(pluginUrl){
 		],
 
 		configSchema: {
-			facilities: {
-				_item: {
-					myDois: {
-						gridOptions: {
-							columnDefs: {
-								_type: 'array',
-								_item: {
-									field: {_type: 'string'},
-									title: { _type: 'string', _mandatory: false },
-								}
-							}
-						}
-					}
-				}
-			}
+
 		},
 
 		setup: function($uibModal, tc, tcDoiMinter){
@@ -46,11 +33,21 @@ registerTopcatPlugin(function(pluginUrl){
 				multiFacility: true
 			});
 
-			var doiMinters = {};
+			tc.ui().registerPage('doi-landing-page', pluginUrl + 'views/doi-landing-page.html', {
+				url: '/doi-landing-page/:id',
+				controller: 'DoiLandingPageController as doiLandingPageController'
+			});
+
+			_.each(tc.facilities(), function(facility){
+				var doiMinter;
+				facility.doiMinter = function(){
+					if(!doiMinter) doiMinter = tcDoiMinter.create(facility);
+					return doiMinter;
+				}
+			});
 
 			tc.doiMinter = function(facilityName){
-				if(!doiMinters[facilityName]) doiMinters[facilityName] = tcDoiMinter.create(tc.facility(facilityName));
-				return doiMinters[facilityName];
+				return tc.facility(facilityName).doiMinter();
 			};
 
 		}

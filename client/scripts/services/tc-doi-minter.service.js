@@ -13,19 +13,21 @@
     	function DoiMinter(facility){
 
     		this.makePublicDataCollection = helpers.overload({
-    			'array, array, object': function(datasetIds, datafileIds, options){
+    			'string, string, array, array, object': function(title, date, datasetIds, datafileIds, options){
     				return this.post('makePublicDataCollection', {
     					icatUrl: facility.config().icatUrl,
     					sessionId: facility.icat().session().sessionId,
+                        title: title,
+                        date: date,
     					datasetIds: datasetIds.join(','),
     					datafileIds: datafileIds.join(',')
     				}, options);
     			},
-    			'promise, array, array': function(timeout, datasetIds, datafileIds){
-    				return this.makePublicDataCollection(datasetIds, datafileIds, {timeout: timeout});
+    			'promise, string, string, array, array': function(timeout, title, date, datasetIds, datafileIds){
+    				return this.makePublicDataCollection(title, date, datasetIds, datafileIds, {timeout: timeout});
     			},
-    			'array, array': function(datasetIds, datafileIds){
-    				return this.makePublicDataCollection(datasetIds, datafileIds, {});
+    			'string, string, array, array': function(title, date, datasetIds, datafileIds){
+    				return this.makePublicDataCollection(title, date, datasetIds, datafileIds, {});
     			}
     		});
 
@@ -43,6 +45,18 @@
                 },
                 'string, number': function(entityType, entityId){
                     return this.makeEntityPublic(entityType, entityId, {});
+                }
+            });
+
+            this.landingPageInfo = helpers.overload({
+                'number, object': function(id, options){
+                    return this.get('landingPageInfo/' + id, {}, options);
+                },
+                'promise, number': function(timeout, id){
+                    return this.landingPageInfo(id, {timeout: timeout});
+                },
+                'number': function(id){
+                    return this.landingPageInfo(id, {});
                 }
             });
 

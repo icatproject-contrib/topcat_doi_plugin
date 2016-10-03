@@ -3,6 +3,11 @@ package org.icatproject.topcatdoiplugin;
 
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Date;
+import java.util.GregorianCalendar;
+import javax.xml.datatype.DatatypeFactory;
+import javax.xml.datatype.XMLGregorianCalendar;
+
 
 import javax.ejb.LocalBean;
 import javax.ejb.Stateless;
@@ -14,14 +19,16 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.FormParam;
+import javax.ws.rs.PathParam;
 import javax.json.Json;
+import javax.json.JsonObjectBuilder;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import org.icatproject.topcatdoiplugin.Properties;
 import org.icatproject.topcatdoiplugin.topcatclient.TopcatClient;
 import org.icatproject.topcatdoiplugin.topcatclient.TopcatClientException;
-
 import org.icatproject.topcatdoiplugin.dataciteclient.DataCiteClient;
 import org.icatproject.topcatdoiplugin.dataciteclient.DataCiteClientException;
 
@@ -43,11 +50,15 @@ import org.icatproject.ICAT;
 import org.icatproject.ICATService;
 import org.icatproject.IcatExceptionType;
 import org.icatproject.DataCollection;
+import org.icatproject.DataCollectionParameter;
+import org.icatproject.ParameterType;
 import org.icatproject.Datafile;
 import org.icatproject.Dataset;
 import org.icatproject.Investigation;
 import org.icatproject.DataCollectionDatafile;
 import org.icatproject.DataCollectionDataset;
+import org.icatproject.Login.Credentials;
+import org.icatproject.Login.Credentials.Entry;
 
 /**
  *
@@ -82,13 +93,15 @@ public class RestApi {
             @FormParam("icatUrl") String icatUrl,
             @FormParam("sessionId") String sessionId,
             @FormParam("datasetIds") String datasetIds,
-            @FormParam("datafileIds") String datafileIds) {
+            @FormParam("datafileIds") String datafileIds,
+            @FormParam("title") String title,
+            @FormParam("releaseDate") String releaseDate) {
 
         try {
             List<Long> datasetIdList = parseIds(datasetIds);
             List<Long> datafileIdList = parseIds(datafileIds);
 
-            DataCollection dataCollection = createDataCollection(icatUrl, sessionId, datasetIdList, datafileIdList);
+            DataCollection dataCollection = createDataCollection(icatUrl, sessionId, title, new Date(), datasetIdList, datafileIdList);
             String doi = generateEntityDoi("DataCollection", dataCollection.getId());
             setEntityDoi(icatUrl, sessionId, "DataCollection", dataCollection.getId(), doi);
 
@@ -116,6 +129,31 @@ public class RestApi {
         }
     }
 
+    @GET
+    @Path("/landingPageInfo/{dataCollectionId}")
+    @Produces({MediaType.APPLICATION_JSON})
+    public Response getLandingPageInfo(
+        @PathParam("dataCollectionId") Long dataCollectionId)  throws Exception {
+
+        try {
+            Properties properties = Properties.getInstance();
+            String readerIcatUrl = properties.getProperty("readerIcatUrl");
+            String readerSessionId = readerSessionId();
+            ICAT icat = createIcat(readerIcatUrl);
+            DataCollection dataCollection = (DataCollection) icat.get(readerSessionId, "DataCollection", dataCollectionId);
+            String title = ((DataCollectionParameter) icat.search(readerSessionId, "select dataCollectionParameter from DataCollectionParameter dataCollectionParameter where dataCollectionParameter.type.name = 'title' and dataCollectionParameter.dataCollection.id = '" + dataCollectionId + "'").get(0)).getStringValue();
+            Date releaseDate = ((DataCollectionParameter) icat.search(readerSessionId, "select dataCollectionParameter from DataCollectionParameter dataCollectionParameter where dataCollectionParameter.type.name = 'releaseDate' and dataCollectionParameter.dataCollection.id = '" + dataCollectionId + "'").get(0)).getDateTimeValue().toGregorianCalendar().getTime();
+
+            JsonObjectBuilder jsonObjectBuilder = Json.createObjectBuilder();
+            jsonObjectBuilder.add("title", title);
+            jsonObjectBuilder.add("releaseDate", releaseDate.toString());
+            
+            return Response.status(200).entity(jsonObjectBuilder.build().toString()).build();
+        } catch(Exception e){
+            return Response.status(400).entity(Json.createObjectBuilder().add("message", e.toString()).build().toString()).build();
+        }
+    }
+
     private List<Long> parseIds(String ids){
         List<Long> out = new ArrayList<Long>();
 
@@ -128,7 +166,7 @@ public class RestApi {
         return out;
     }
 
-    private void setEntityDoi(String icatUrl, String sessionId, String entityType, Long entityId, String doi) throws Exception{
+    private void setEntityDoi(String icatUrl, String sessionId, String entityType, Long entityId, String doi) throws Exception {
         ICAT icat = createIcat(icatUrl);
 
         if(entityType.equals("Investigation")){
@@ -157,11 +195,26 @@ public class RestApi {
 
     }
 
-    private DataCollection createDataCollection(String icatUrl, String sessionId, List<Long> datasetIds, List<Long> datafileIds) throws Exception {
+    private DataCollection createDataCollection(String icatUrl, String sessionId, String title, Date releaseDate,  List<Long> datasetIds, List<Long> datafileIds) throws Exception {
         ICAT icat = createIcat(icatUrl);
 
         DataCollection dataCollection = new DataCollection();
         dataCollection.setId(icat.create(sessionId, dataCollection));
+
+        ParameterType titleParameterType = getParameterType(icatUrl, sessionId, "title");
+        ParameterType releaseDateParameterType = getParameterType(icatUrl, sessionId, "releaseDate");
+
+        DataCollectionParameter titleDataCollectionParmeter = new DataCollectionParameter();
+        titleDataCollectionParmeter.setDataCollection(dataCollection);
+        titleDataCollectionParmeter.setType(titleParameterType);
+        titleDataCollectionParmeter.setStringValue(title);
+        icat.create(sessionId, titleDataCollectionParmeter);
+
+        DataCollectionParameter releaseDateDataCollectionParmeter = new DataCollectionParameter();
+        releaseDateDataCollectionParmeter.setDataCollection(dataCollection);
+        releaseDateDataCollectionParmeter.setType(releaseDateParameterType);
+        releaseDateDataCollectionParmeter.setDateTimeValue(dateToXMLGregorianCalendar(releaseDate));
+        icat.create(sessionId, releaseDateDataCollectionParmeter);
 
         for(Long datasetId : datasetIds){
             Dataset dataset = (Dataset) icat.get(sessionId, "Dataset", datasetId);
@@ -182,10 +235,45 @@ public class RestApi {
         return dataCollection;
     }
 
+    private ParameterType getParameterType(String icatUrl, String sessionId, String name) throws Exception {
+        return (ParameterType) createIcat(icatUrl).search(sessionId, "select parameterType from ParameterType parameterType where parameterType.name = '" + name + "'").get(0);
+    }
+
+    private XMLGregorianCalendar dateToXMLGregorianCalendar(Date date) throws Exception {
+        GregorianCalendar gregorianCalendar = new GregorianCalendar();
+        gregorianCalendar.setTime(date);
+        return DatatypeFactory.newInstance().newXMLGregorianCalendar(gregorianCalendar);
+    }
+
     private ICAT createIcat(String icatUrl) throws Exception {
         URL icatServiceUrl = new URL(icatUrl + "/ICATService/ICAT?wsdl");
         ICATService icatService = new ICATService(icatServiceUrl, new QName("http://icatproject.org", "ICATService"));
         return icatService.getICATPort();
+    }
+
+    private String readerSessionId() throws Exception {
+        Properties properties = Properties.getInstance();
+        String readerIcatUrl = properties.getProperty("readerIcatUrl");
+        String readerAuthenticationPlugin = properties.getProperty("readerAuthenticationPlugin");
+        String readerUsername = properties.getProperty("readerUsername");
+        String readerPassword = properties.getProperty("readerPassword");
+
+        ICAT icat = createIcat(readerIcatUrl);
+
+        Credentials credentials = new Credentials();
+        List<Entry> entries = credentials.getEntry();
+        Entry entry;
+
+        entry = new Entry();
+        entry.setKey("username");
+        entry.setValue(readerUsername);
+        entries.add(entry);
+        entry = new Entry();
+        entry.setKey("password");
+        entry.setValue(readerPassword);
+        entries.add(entry);
+
+        return icat.login(readerAuthenticationPlugin, credentials);
     }
 
     private void createDoi(

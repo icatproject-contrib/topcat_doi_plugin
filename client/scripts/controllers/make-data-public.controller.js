@@ -5,9 +5,19 @@
 
     var app = angular.module('topcat');
 
-    app.controller('MakeDataPublicController', function($uibModalInstance, $uibModalStack, tc, inform){
+    app.controller('MakeDataPublicController', function($uibModalInstance, $uibModalStack, $timeout, tc, inform){
+        
+        if(tc.userFacilities().length > 1){
+            alert("This feature can't be used with multiple facilities.");
+            $timeout(function(){
+                $uibModalInstance.dismiss();
+            });
+            return;
+        }
+
         var that = this;
-    	this.state = 'release_date';
+    	this.state = 'basic_details';
+        this.title = "";
     	this.isReleaseDate = false;
     	this.releaseDate = null;
     	this.isReleaseDateOpen = false;
@@ -38,7 +48,7 @@
         this.password = "";
 
     	this.isPreviousDisabled = function(){
-    		return this.state == 'release_date';
+    		return this.state == 'basic_details';
     	};
 
     	this.previous = function(){
@@ -46,12 +56,12 @@
     			this.state = 'legal';
     			this.password = '';
     		} else if(this.state == 'legal'){
-    			this.state = 'release_date';
+    			this.state = 'basic_details';
     		}
     	};
 
     	this.isNextDisabled = function(){
-    		if(this.state == 'release_date' && (!this.isReleaseDate || this.releaseDate != null)){
+    		if(this.state == 'basic_details' && (!this.isReleaseDate || this.releaseDate != null) && this.title != ''){
     			return false;
     		}
 
@@ -65,7 +75,7 @@
     	this.next = function(){
     		this.nextEnabled = false;
 
-    		if(this.state == 'release_date' && (!this.isReleaseDate || this.releaseDate != null)){
+    		if(this.state == 'basic_details' && (!this.isReleaseDate || this.releaseDate != null)){
     			this.isReleaseDateOpen = false;
     			this.state = 'legal';
 	    	} else if(this.state == 'legal' && this.licence != null && this.hasAcceptedLegal){
@@ -80,7 +90,24 @@
     	this.confirm = function(){
             tc.icat(this.facilityName).verifyPassword(this.password).then(function(isValid){
                 if(isValid){
-                    $uibModalStack.dismissAll();
+                    var facility = tc.userFacilities()[0];
+                    facility.user().cart().then(function(cart){
+                        var datasetIds = [];
+                        var datafileIds = [];
+
+                        _.each(cart.cartItems,  function(cartItem){
+                            if(cartItem.entityType == 'dataset') datasetIds.push(cartItem.entityId);
+                            if(cartItem.entityType == 'datafile') datafileIds.push(cartItem.entityId);
+                        });
+
+                        facility.doiMinter().makePublicDataCollection(that.title, that.isReleaseDate ? that.releaseDate : "", datasetIds, datafileIds).then(function(){
+                            $uibModalStack.dismissAll();
+                        });
+
+                    });
+                    
+                    //tc.doiMinter().makePublicDataCollection(that.title, that.isReleaseDate ? that.releaseDate : "");
+                    //$uibModalStack.dismissAll();
                 } else {
                     that.password = "";
                     inform.add("Password is invalid - please try again", {

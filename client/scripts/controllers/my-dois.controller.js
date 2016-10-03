@@ -15,18 +15,34 @@
         var page = 1;
         var pageSize = 10;
         var chunk = 1;
-        var chunkSize = 10;
+        var chunkSize = 100;
         var facilityName = $state.params.facilityName;
+        this.facilityName = facilityName;
         var facility = tc.facility(facilityName);
         var icat = facility.icat();
         var gridApi;
 
         var isScroll = true;
         this.isScroll = isScroll;
-        var gridOptions = _.merge({
+        var gridOptions = {
             data: [],
-            appScopeProvider: this
-        }, facility.config().myDois.gridOptions);
+            appScopeProvider: this,
+            "columnDefs": [
+                {
+                    "field": "doi",
+                    "title": "DOI"
+                },
+                {
+                    "field": "dataCollectionParameter[entity.type.name == 'title'].stringValue",
+                    "title": "Title",
+                    "cellTemplate": "<div class='ui-grid-cell-contents'><a ui-sref=\"doi-landing-page({id: row.entity.id})\">{{row.entity.find(&quot;dataCollectionParameter[entity.type.name == 'title'].stringValue&quot;)[0]}}</a></div>"
+                },
+                {
+                    "field": "dataCollectionParameter[entity.type.name == 'releaseDate'].dateTimeValue",
+                    "title": "Release Date"
+                }
+            ]
+        };
         helpers.setupIcatGridOptions(gridOptions, "dataCollection");
         this.gridOptions = gridOptions;
 
@@ -109,7 +125,8 @@
                 "dataCollection.doi != null ",
                 "and ",
                 "user.name = :user ",
-                "limit ?, ?", (page - 1) * pageSize, pageSize
+                "limit ?, ?", (page - 1) * pageSize, pageSize,
+                "include dataCollection.parameters.type"
             ]]);
         }
 
