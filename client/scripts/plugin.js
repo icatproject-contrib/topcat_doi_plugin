@@ -34,7 +34,7 @@ registerTopcatPlugin(function(pluginUrl){
 			});
 
 			tc.ui().registerPage('doi-landing-page', pluginUrl + 'views/doi-landing-page.html', {
-				url: '/doi-landing-page/:id',
+				url: '/doi-landing-page/:facilityName/DataCollection/:entityId',
 				controller: 'DoiLandingPageController as doiLandingPageController'
 			});
 

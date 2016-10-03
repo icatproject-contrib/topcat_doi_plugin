@@ -7,9 +7,11 @@
 
     app.controller('DoiLandingPageController', function($state, tc){
         var that = this;
-        var id = parseInt($state.params.id);
+        var facilityName = $state.params.facilityName;
+        var entityId = parseInt($state.params.entityId);
+        var facility = tc.facility(facilityName);
 
-        tc.doiMinter().landingPageInfo(id).then(function(landingPageInfo){
+        facility.doiMinter().landingPageInfo(entityId).then(function(landingPageInfo){
         	that.title = landingPageInfo.title;
         });
     });

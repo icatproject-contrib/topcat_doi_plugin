@@ -35,7 +35,7 @@
                 {
                     "field": "dataCollectionParameter[entity.type.name == 'title'].stringValue",
                     "title": "Title",
-                    "cellTemplate": "<div class='ui-grid-cell-contents'><a ui-sref=\"doi-landing-page({id: row.entity.id})\">{{row.entity.find(&quot;dataCollectionParameter[entity.type.name == 'title'].stringValue&quot;)[0]}}</a></div>"
+                    "cellTemplate": "<div class='ui-grid-cell-contents'><a ui-sref=\"doi-landing-page({facilityName: grid.appScope.facilityName, entityId: row.entity.id})\">{{row.entity.find(&quot;dataCollectionParameter[entity.type.name == 'title'].stringValue&quot;)[0]}}</a></div>"
                 },
                 {
                     "field": "dataCollectionParameter[entity.type.name == 'releaseDate'].dateTimeValue",
