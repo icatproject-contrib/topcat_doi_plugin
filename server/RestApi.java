@@ -154,6 +154,39 @@ public class RestApi {
         }
     }
 
+    @GET
+    @Path("/redirectToLandingPage/{dataCollectionId}")
+    @Produces({MediaType.TEXT_HTML})
+    public Response redirectToLandingPage(
+        @PathParam("dataCollectionId") Long dataCollectionId)  throws Exception {
+
+        
+        String facilityName = dataCollectionToFacilityName(dataCollectionId);
+
+        StringBuilder html = new StringBuilder();
+
+        html.append("<script>");
+        html.append("window.location = '/#doi-landing-page/" + facilityName + "/DataCollection/" + dataCollectionId + "';");
+        html.append("</script>");
+
+        return Response.status(200).entity(html.toString()).build();
+    }
+
+
+    private String dataCollectionToFacilityName(Long dataCollectionId) throws Exception {
+        Properties properties = Properties.getInstance();
+        String readerIcatUrl = properties.getProperty("readerIcatUrl");
+        String readerSessionId = readerSessionId();
+        ICAT icat = createIcat(readerIcatUrl);
+        DataCollection dataCollection = (DataCollection) icat.get(readerSessionId, "DataCollection dataCollection include dataCollection.dataCollectionDatafiles.datafile.dataset.investigation.facility, dataCollection.dataCollectionDatasets.dataset.investigation.facility", dataCollectionId);
+
+        if(dataCollection.getDataCollectionDatafiles().size() > 0){
+            return dataCollection.getDataCollectionDatafiles().get(0).getDatafile().getDataset().getInvestigation().getFacility().getName();
+        } else {
+            return dataCollection.getDataCollectionDatasets().get(0).getDataset().getInvestigation().getFacility().getName();
+        } 
+    }
+
     private List<Long> parseIds(String ids){
         List<Long> out = new ArrayList<Long>();
 

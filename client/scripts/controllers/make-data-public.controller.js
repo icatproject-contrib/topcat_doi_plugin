@@ -91,7 +91,8 @@
             tc.icat(this.facilityName).verifyPassword(this.password).then(function(isValid){
                 if(isValid){
                     var facility = tc.userFacilities()[0];
-                    facility.user().cart().then(function(cart){
+                    var user = facility.user();
+                    user.cart().then(function(cart){
                         var datasetIds = [];
                         var datafileIds = [];
 
@@ -101,7 +102,9 @@
                         });
 
                         facility.doiMinter().makePublicDataCollection(that.title, that.isReleaseDate ? that.releaseDate : "", datasetIds, datafileIds).then(function(){
-                            $uibModalStack.dismissAll();
+                            user.deleteAllCartItems().then(function(){
+                                $uibModalStack.dismissAll();
+                            });
                         });
 
                     });
