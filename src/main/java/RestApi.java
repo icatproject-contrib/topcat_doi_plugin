@@ -3,6 +3,7 @@ package org.icatproject.topcatdoiplugin;
 
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Map;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import javax.xml.datatype.DatatypeFactory;
@@ -66,6 +67,12 @@ import org.icatproject.DataCollectionDataset;
 import org.icatproject.Login.Credentials;
 import org.icatproject.Login.Credentials.Entry;
 
+import org.icatproject.ids.client.DataSelection;
+import org.icatproject.ids.client.IdsClient;
+import org.icatproject.ids.client.IdsException;
+import org.icatproject.ids.client.IdsClient.Flag;
+import org.icatproject.ids.client.IdsClient.Status;
+
 /**
  *
  * @author elz24996
@@ -120,24 +127,6 @@ public class RestApi {
         }
     }
 
-    @POST
-    @Path("/makeEntityPublic")
-    @Produces({MediaType.APPLICATION_JSON})
-    public Response makeEntityPublic(
-        @FormParam("icatUrl") String icatUrl,
-        @FormParam("sessionId") String sessionId,
-        @FormParam("entityType") String entityType,
-        @FormParam("entityId") Long entityId) throws Exception {
-
-        try {
-            String doi = generateEntityDoi(entityType, entityId);
-            setEntityDoi(icatUrl, sessionId, entityType, entityId, doi);
-            return Response.ok().entity(Json.createObjectBuilder().add("doi", doi).build().toString()).build();
-         } catch(Exception e){
-            return Response.status(400).entity(Json.createObjectBuilder().add("message", e.toString()).build().toString()).build();
-        }
-    }
-
     @GET
     @Path("/landingPageInfo/{dataCollectionId}")
     @Produces({MediaType.APPLICATION_JSON})
@@ -169,8 +158,7 @@ public class RestApi {
     public Response redirectToLandingPage(
         @PathParam("dataCollectionId") Long dataCollectionId)  throws Exception {
 
-        
-        String facilityName = dataCollectionToFacilityName(dataCollectionId);
+        String facilityName = dataCollectionToFacilityName(getDataCollection(dataCollectionId));
 
         StringBuilder html = new StringBuilder();
 
@@ -181,20 +169,127 @@ public class RestApi {
         return Response.status(200).entity(html.toString()).build();
     }
 
-    
+    @GET
+    @Path("/status/{dataCollectionId}")
+    @Produces({MediaType.APPLICATION_JSON})
+    public Response getStatus(
+        @PathParam("dataCollectionId") Long dataCollectionId) throws Exception {
 
-    private String dataCollectionToFacilityName(Long dataCollectionId) throws Exception {
-        Properties properties = Properties.getInstance();
-        String readerIcatUrl = properties.getProperty("readerIcatUrl");
-        String readerSessionId = readerSessionId();
-        ICAT icat = createIcat(readerIcatUrl);
-        DataCollection dataCollection = (DataCollection) icat.get(readerSessionId, "DataCollection dataCollection include dataCollection.dataCollectionDatafiles.datafile.dataset.investigation.facility, dataCollection.dataCollectionDatasets.dataset.investigation.facility", dataCollectionId);
+        try {
+            DataSelection dataSelection = dataCollectionToDataSelection(getDataCollection(dataCollectionId));
+            Properties properties = Properties.getInstance();
+            URL readerIdsUrl = new URL(properties.getProperty("readerIdsUrl"));
+            IdsClient idsClient = new IdsClient(readerIdsUrl);
+            Status status = null;
+            String readerSessionId = readerSessionId();
 
+            for(DataSelection currentDataSelection : chunkDataSelection(dataSelection)){
+                Status currentStatus = idsClient.getStatus(readerSessionId, currentDataSelection);
+                if(currentStatus == Status.ARCHIVED){
+                    status = Status.ARCHIVED;
+                    break;
+                } else if(currentStatus == Status.RESTORING){
+                    status = Status.RESTORING;
+                } else if(status != Status.RESTORING){
+                    status = Status.ONLINE;
+                }
+            }
+            
+            return Response.status(200).entity("\"" + status.name() + "\"").build();
+        } catch(Exception e){
+            return Response.status(400).entity(Json.createObjectBuilder().add("message", e.toString()).build().toString()).build();
+        }
+    }
+
+    @POST
+    @Path("/prepareDownload/{dataCollectionId}")
+    @Produces({MediaType.APPLICATION_JSON})
+    public Response prepareDownload(
+        @PathParam("dataCollectionId") Long dataCollectionId)  throws Exception {
+
+        return Response.status(200).entity(Json.createObjectBuilder().add("preparedId", "coming soon").build().toString()).build();
+    }
+
+    private DataSelection dataCollectionToDataSelection(DataCollection dataCollection) {
+        DataSelection dataSelection = new DataSelection();
+
+        for(DataCollectionDataset dataCollectionDataset : dataCollection.getDataCollectionDatasets()){
+            dataSelection.addDataset(dataCollectionDataset.getDataset().getId());
+        }
+
+        for(DataCollectionDatafile dataCollectionDatafile : dataCollection.getDataCollectionDatafiles()){
+            dataSelection.addDatafile(dataCollectionDatafile.getDatafile().getId());
+        }
+
+        return dataSelection;
+    }
+
+    private String dataCollectionToFacilityName(DataCollection dataCollection) throws Exception {
         if(dataCollection.getDataCollectionDatafiles().size() > 0){
             return dataCollection.getDataCollectionDatafiles().get(0).getDatafile().getDataset().getInvestigation().getFacility().getName();
         } else {
             return dataCollection.getDataCollectionDatasets().get(0).getDataset().getInvestigation().getFacility().getName();
         } 
+    }
+
+    private DataCollection getDataCollection(Long id) throws Exception {
+        Properties properties = Properties.getInstance();
+        String readerIcatUrl = properties.getProperty("readerIcatUrl");
+        String readerSessionId = readerSessionId();
+        ICAT icat = createIcat(readerIcatUrl);
+        return (DataCollection) icat.get(readerSessionId, "DataCollection dataCollection include dataCollection.dataCollectionDatafiles.datafile.dataset.investigation.facility, dataCollection.dataCollectionDatasets.dataset.investigation.facility", id);
+    }
+
+    private List<DataSelection> chunkDataSelection(DataSelection dataSelection){
+        List<DataSelection> out = new ArrayList<DataSelection>();
+        Map<String, String> parameters = dataSelection.getParameters();
+        List<Long> datasetIds = new ArrayList<Long>();
+        List<Long> datafileIds = new ArrayList<Long>();
+
+        if(parameters.get("datasetIds") != null){
+            for(String id : parameters.get("datasetIds").split(",")){
+                datasetIds.add(Long.valueOf(id));
+            }
+        }
+        if(parameters.get("datafileIds") != null){
+            for(String id : parameters.get("datafileIds").split(",")){
+                datafileIds.add(Long.valueOf(id));
+            }
+        }
+
+        while(!datasetIds.isEmpty() || !datafileIds.isEmpty()){
+            DataSelection currentDataSelection = new DataSelection();
+
+            while(!datasetIds.isEmpty()){
+                if(dataSelectionSize(currentDataSelection) >= 900){
+                    break;
+                }
+                currentDataSelection.addDataset(datasetIds.remove(0));
+            }
+
+            while(!datafileIds.isEmpty()){
+                if(dataSelectionSize(currentDataSelection) >= 900){
+                    break;
+                }
+                currentDataSelection.addDatafile(datafileIds.remove(0));
+            }
+
+            out.add(currentDataSelection);
+        }
+
+        return out;
+    }
+
+    private int dataSelectionSize(DataSelection dataSelection){
+        Map<String, String> parameters = dataSelection.getParameters();
+        int out = 0;
+        if(parameters.get("datasetIds") != null){
+            out += parameters.get("datasetIds").length();
+        }
+        if(parameters.get("datafileIds") != null){
+            out += parameters.get("datafileIds").length();
+        }
+        return out; 
     }
 
     private List<Long> parseIds(String ids){
