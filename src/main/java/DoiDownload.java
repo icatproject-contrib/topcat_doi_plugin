@@ -37,8 +37,14 @@ public class DoiDownload implements Serializable {
     @Column(name = "PREPARED_ID", nullable = false)
     private String preparedId;
 
+    @Column(name = "TRANSPORT_URL", nullable = false)
+    private String transportUrl = "";
+
     @Column(name = "IS_EMAIL_SENT")
     private Boolean isEmailSent = false;
+
+    @Column(name = "FILE_NAME", nullable = false)
+    private String fileName;
 
     @Column(name = "CREATED_AT", nullable=false, updatable=false)
     @Temporal(TemporalType.TIMESTAMP)
@@ -73,12 +79,28 @@ public class DoiDownload implements Serializable {
         this.preparedId = preparedId;
     }
 
+    public String getTransportUrl() {
+        return transportUrl;
+    }
+
+    public void setTransportUrl(String transportUrl) {
+        this.transportUrl = transportUrl;
+    }
+
     public Boolean getIsEmailSent() {
         return isEmailSent;
     }
 
     public void setIsEmailSent(Boolean isEmailSent) {
         this.isEmailSent = isEmailSent;
+    }
+
+    public String getFileName() {
+        return fileName;
+    }
+
+    public void setFileName(String fileName) {
+        this.fileName = fileName;
     }
 
     public Date getCreatedAt() {
