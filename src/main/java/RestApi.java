@@ -219,11 +219,6 @@ public class RestApi {
             JsonObjectBuilder jsonObjectBuilder = Json.createObjectBuilder();
             jsonObjectBuilder.add("preparedId", preparedId);
 
-            String downloadUrl = readerIdsUrl.toString();
-            downloadUrl += "/ids/getData?preparedId=" + preparedId;
-            downloadUrl += "&outname=" + fileName;
-            jsonObjectBuilder.add("downloadUrl", downloadUrl);
-
             if(email != null && email.length() > 0){
                 DoiDownload doiDownload = new DoiDownload();
                 doiDownload.setTransportUrl(readerIdsUrl.toString());
@@ -232,6 +227,11 @@ public class RestApi {
                 doiDownload.setEmail(email);
                 em.persist(doiDownload);
                 em.flush();
+            } else {
+                String downloadUrl = readerIdsUrl.toString();
+                downloadUrl += "/ids/getData?preparedId=" + preparedId;
+                downloadUrl += "&outname=" + fileName;
+                jsonObjectBuilder.add("downloadUrl", downloadUrl);
             }
 
             return Response.status(200).entity(jsonObjectBuilder.build().toString()).build();

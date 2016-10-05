@@ -30,7 +30,24 @@
         });
 
         this.next = function(){
-        	
+        	if(this.email){
+        		facility.doiMinter().prepareData(entityId, this.fileName, this.email).then(function(){
+        			alert("As soon as the data becomes available you'll emailed a download link.");
+        			$uibModalInstance.dismiss();
+        		});	
+        	} else {
+        		facility.doiMinter().prepareData(entityId, this.fileName).then(function(result){
+        			$uibModalInstance.dismiss();
+        			$(document.body).append($('<iframe>').attr({
+                        src: result.downloadUrl
+                    }).css({
+                        position: 'relative',
+                        left: '-1000000px',
+                        height: '1px',
+                        width: '1px'
+                    }));
+    			});
+        	}
         };
 
         this.cancel = function() {
