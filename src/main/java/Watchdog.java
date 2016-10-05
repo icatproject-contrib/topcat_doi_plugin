@@ -95,7 +95,7 @@ public class Watchdog {
   private void sendDoiDownloadReadyEmail(DoiDownload doiDownload){
     EmailValidator emailValidator = EmailValidator.getInstance();
     Properties properties = Properties.getInstance();
-    
+
     if (doiDownload.getEmail() != null) {
       if (emailValidator.isValid(doiDownload.getEmail())) {
 
@@ -110,8 +110,8 @@ public class Watchdog {
         valuesMap.put("fileName", doiDownload.getFileName());
 
         StrSubstitutor sub = new StrSubstitutor(valuesMap);
-        String subject = sub.replace(properties.getProperty("dataReadyEmailSubject"));
-        String message = sub.replace(properties.getProperty("dataReadyEmailMessage"));
+        String subject = sub.replace(properties.getProperty("doiDownloadReadyEmailSubject"));
+        String message = sub.replace(properties.getProperty("doiDownloadReadyEmailMessage"));
 
         mailer.send(doiDownload.getEmail(), subject, message);
 

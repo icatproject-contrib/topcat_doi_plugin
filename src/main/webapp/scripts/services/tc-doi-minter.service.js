@@ -6,11 +6,15 @@
 
     app.service('tcDoiMinter', function(tc, helpers){
 
-    	this.create = function(facility){
-    		return new DoiMinter(facility);
+    	this.create = function(pluginUrl, facility){
+    		return new DoiMinter(pluginUrl, facility);
     	};
 
-    	function DoiMinter(facility){
+    	function DoiMinter(pluginUrl, facility){
+
+            this.pluginUrl = function(){
+                return pluginUrl;
+            };
 
     		this.makePublicDataCollection = helpers.overload({
     			'string, string, array, array, object': function(title, date, datasetIds, datafileIds, options){

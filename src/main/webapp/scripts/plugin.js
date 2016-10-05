@@ -6,6 +6,7 @@ registerTopcatPlugin(function(pluginUrl){
 			pluginUrl + 'scripts/controllers/make-data-public.controller.js',
 			pluginUrl + 'scripts/controllers/my-dois.controller.js',
 			pluginUrl + 'scripts/controllers/doi-landing-page.controller.js',
+			pluginUrl + 'scripts/controllers/doi-landing-page-download.controller.js',
 			pluginUrl + 'scripts/services/tc-doi-minter.service.js'
 		],
 
@@ -41,7 +42,7 @@ registerTopcatPlugin(function(pluginUrl){
 			_.each(tc.facilities(), function(facility){
 				var doiMinter;
 				facility.doiMinter = function(){
-					if(!doiMinter) doiMinter = tcDoiMinter.create(facility);
+					if(!doiMinter) doiMinter = tcDoiMinter.create(pluginUrl, facility);
 					return doiMinter;
 				}
 			});

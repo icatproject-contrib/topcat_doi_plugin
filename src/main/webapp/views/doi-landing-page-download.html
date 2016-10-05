@@ -1,0 +1,31 @@
+<form>
+    <div class="modal-header">
+        <h3 class="modal-title" translate="LANDING_PAGE.DOWNLOAD.TITLE"></h3>
+    </div>
+    <div class="modal-body">
+        <div class="form-group">
+            <label>File name</label>
+            <input type="text" ng-model="doiLandingPageDownloadController.fileName" class="form-control input-sm">
+        </div>
+        <div class="form-group">
+            <label>Email</label>
+            <input type="text" ng-model="doiLandingPageDownloadController.email
+            " class="form-control input-sm" placeholder="Please give your email">
+        </div>
+    </div>
+    <div class="modal-footer">
+        <button
+            type="submit"
+        	class="btn btn-primary"
+            ng-disabled="doiLandingPageDownloadController.isNextDisabled()" 
+        	ng-click="doiLandingPageDownloadController.next()"
+        	translate="LANDING_PAGE.DOWNLOAD.NEXT_BUTTON.TEXT">	
+        </button>
+
+        <button
+        	class="btn btn-warning"
+        	ng-click="doiLandingPageDownloadController.cancel()"
+        	translate="LANDING_PAGE.DOWNLOAD.CANCEL_BUTTON.TEXT">	
+        </button>
+    </div>
+</form>
