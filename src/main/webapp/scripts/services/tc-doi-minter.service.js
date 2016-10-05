@@ -64,6 +64,18 @@
                 }
             });
 
+            this.getStatus = helpers.overload({
+                'number, object': function(id, options){
+                    return this.get('status/' + id, {}, options);
+                },
+                'promise, number': function(timeout, id){
+                    return this.getStatus(id, {timeout: timeout});
+                },
+                'number': function(id){
+                    return this.getStatus(id, {});
+                }
+            });
+
     		helpers.generateRestMethods(this, tc.config().topcatUrl + "/topcat_doi_plugin/api/");
 
     	}

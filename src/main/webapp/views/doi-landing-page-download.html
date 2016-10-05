@@ -7,10 +7,10 @@
             <label>File name</label>
             <input type="text" ng-model="doiLandingPageDownloadController.fileName" class="form-control input-sm">
         </div>
-        <div class="form-group">
+        <div class="form-group" ng-if="doiLandingPageDownloadController.status !== undefined && doiLandingPageDownloadController.status != 'ONLINE'">
             <label>Email</label>
             <input type="text" ng-model="doiLandingPageDownloadController.email
-            " class="form-control input-sm" placeholder="Please give your email">
+            " class="form-control input-sm" placeholder="Please give your email - we'll email you when the data has been restored from tape">
         </div>
     </div>
     <div class="modal-footer">

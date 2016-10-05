@@ -25,8 +25,12 @@
         if(second < 10) second = '0' + second;
         this.fileName = facility.config().name + "_" + year + "-" + month + "-" + day + "_" + hour + "-" + minute + "-" + second;
 
+        facility.doiMinter().getStatus(entityId).then(function(status){
+        	that.status = status;
+        });
+
         this.next = function(){
-        	
+
         };
 
         this.cancel = function() {
@@ -34,7 +38,7 @@
         };
 
         this.isNextDisabled = function(){
-        	return !(this.fileName != '' && this.email && this.email.match(/^[^@\s]+@[^@\s]+$/) && this.fileName)
+        	return !(this.status !== undefined && this.fileName != '' && (this.status == 'ONLINE' || (this.email && this.email.match(/^[^@\s]+@[^@\s]+$/) && this.fileName)));
         };
         
     });
