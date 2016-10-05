@@ -11,8 +11,6 @@
 
 	<build>
 
-		<sourceDirectory>server</sourceDirectory>
-
 		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
@@ -28,9 +26,6 @@
 			<plugin>
 				<artifactId>maven-war-plugin</artifactId>
 				<version>2.5</version>
-				<configuration>
-					<warSourceDirectory>client</warSourceDirectory>
-				</configuration>
 			</plugin>
 		</plugins>
 	</build>

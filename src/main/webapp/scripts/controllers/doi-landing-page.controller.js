@@ -14,6 +14,11 @@
         facility.doiMinter().landingPageInfo(entityId).then(function(landingPageInfo){
         	that.title = landingPageInfo.title;
         });
+
+        this.download = function(){
+        	
+        };
+
     });
 
 })();

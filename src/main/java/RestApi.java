@@ -23,6 +23,11 @@ import javax.ws.rs.PathParam;
 import javax.json.Json;
 import javax.json.JsonObjectBuilder;
 
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+import javax.persistence.TypedQuery;
+
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -31,6 +36,7 @@ import org.icatproject.topcatdoiplugin.topcatclient.TopcatClient;
 import org.icatproject.topcatdoiplugin.topcatclient.TopcatClientException;
 import org.icatproject.topcatdoiplugin.dataciteclient.DataCiteClient;
 import org.icatproject.topcatdoiplugin.dataciteclient.DataCiteClientException;
+import org.icatproject.topcatdoiplugin.DoiDownload;
 
 import org.w3c.dom.*;
 import javax.xml.parsers.*;
@@ -70,6 +76,9 @@ import org.icatproject.Login.Credentials.Entry;
 public class RestApi {
     
     private static final Logger logger = LoggerFactory.getLogger(RestApi.class);
+
+    @PersistenceContext(unitName = "topcat")
+    EntityManager em;
     
     /**
      * Used to detect whether app is running or not.
@@ -166,12 +175,13 @@ public class RestApi {
         StringBuilder html = new StringBuilder();
 
         html.append("<script>");
-        html.append("window.location = '/#doi-landing-page/" + facilityName + "/DataCollection/" + dataCollectionId + "';");
+        html.append("window.location = '/#/doi-landing-page/" + facilityName + "/DataCollection/" + dataCollectionId + "';");
         html.append("</script>");
 
         return Response.status(200).entity(html.toString()).build();
     }
 
+    
 
     private String dataCollectionToFacilityName(Long dataCollectionId) throws Exception {
         Properties properties = Properties.getInstance();
