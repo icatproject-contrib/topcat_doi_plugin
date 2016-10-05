@@ -76,6 +76,27 @@
                 }
             });
 
+            this.prepareData = helpers.overload({
+                'number, string, string, object': function(id, fileName, email, options){
+                    return this.post('prepareData/' + id, {fileName: fileName, email: email}, options);
+                },
+                'promise, number, string, string': function(timeout, id,  email){
+                    return this.prepareData(id, fileName, email, {timeout: timeout});
+                },
+                'number, string, string': function(id, fileName, email){
+                    return this.prepareData(id, fileName, email, {});
+                },
+                'number, string, object': function(id, fileName, options){
+                    return this.prepareData(id, fileName, "", {timeout: timeout});
+                },
+                'promise, number, string': function(timeout, id, fileName){
+                    return this.prepareData(id, fileName, "", {timeout: timeout});
+                },
+                'number, string': function(id, fileName){
+                    return this.prepareData(id, fileName, "", {});
+                }
+            });
+
     		helpers.generateRestMethods(this, tc.config().topcatUrl + "/topcat_doi_plugin/api/");
 
     	}

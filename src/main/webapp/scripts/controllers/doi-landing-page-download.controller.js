@@ -30,7 +30,7 @@
         });
 
         this.next = function(){
-
+        	
         };
 
         this.cancel = function() {

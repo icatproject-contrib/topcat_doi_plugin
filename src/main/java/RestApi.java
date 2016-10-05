@@ -202,12 +202,42 @@ public class RestApi {
     }
 
     @POST
-    @Path("/prepareDownload/{dataCollectionId}")
+    @Path("/prepareData/{dataCollectionId}")
     @Produces({MediaType.APPLICATION_JSON})
-    public Response prepareDownload(
-        @PathParam("dataCollectionId") Long dataCollectionId)  throws Exception {
+    public Response prepareData(
+        @PathParam("dataCollectionId") Long dataCollectionId,
+        @FormParam("fileName") String fileName,
+        @FormParam("email") String email) throws Exception {
 
-        return Response.status(200).entity(Json.createObjectBuilder().add("preparedId", "coming soon").build().toString()).build();
+        try {
+            DataSelection dataSelection = dataCollectionToDataSelection(getDataCollection(dataCollectionId));
+            Properties properties = Properties.getInstance();
+            URL readerIdsUrl = new URL(properties.getProperty("readerIdsUrl"));
+            IdsClient idsClient = new IdsClient(readerIdsUrl);
+            String preparedId = idsClient.prepareData(readerSessionId(), dataSelection, Flag.ZIP);
+
+            JsonObjectBuilder jsonObjectBuilder = Json.createObjectBuilder();
+            jsonObjectBuilder.add("preparedId", preparedId);
+
+            String downloadUrl = readerIdsUrl.toString();
+            downloadUrl += "/ids/getData?preparedId=" + preparedId;
+            downloadUrl += "&outname=" + fileName;
+            jsonObjectBuilder.add("downloadUrl", downloadUrl);
+
+            if(email != null && email.length() > 0){
+                DoiDownload doiDownload = new DoiDownload();
+                doiDownload.setTransportUrl(readerIdsUrl.toString());
+                doiDownload.setPreparedId(preparedId);
+                doiDownload.setFileName(fileName);
+                doiDownload.setEmail(email);
+                em.persist(doiDownload);
+                em.flush();
+            }
+
+            return Response.status(200).entity(jsonObjectBuilder.build().toString()).build();
+        } catch(Exception e){
+            return Response.status(400).entity(Json.createObjectBuilder().add("message", e.toString()).build().toString()).build();
+        }
     }
 
     private DataSelection dataCollectionToDataSelection(DataCollection dataCollection) {
