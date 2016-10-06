@@ -105,6 +105,11 @@
                             user.deleteAllCartItems().then(function(){
                                 $uibModalStack.dismissAll();
                             });
+                        }, function(response){
+                            inform.add(response.message, {
+                                'ttl': 3000,
+                                'type': 'danger'
+                            });
                         });
 
                     });

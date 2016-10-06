@@ -53,7 +53,7 @@ public class DataCiteClient {
 		return out;
 	}
 
-	private String documentToString(Document document){
+	private String documentToString(Document document) throws DataCiteClientException {
 	    try {
 	       DOMSource domSource = new DOMSource(document);
 	       StringWriter writer = new StringWriter();
@@ -63,7 +63,7 @@ public class DataCiteClient {
 	       transformer.transform(domSource, result);
 	       return writer.toString();
 	    } catch(TransformerException ex) {
-	       return null;
+	       throw new DataCiteClientException(ex.getMessage());
 	    }
 	}
 

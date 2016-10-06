@@ -121,7 +121,28 @@ public class RestApi {
             String doi = generateEntityDoi("DataCollection", dataCollection.getId());
             setEntityDoi(icatUrl, sessionId, "DataCollection", dataCollection.getId(), doi);
 
+            List<String> creatorNames = new ArrayList<String>();
+            creatorNames.add("Mr Foo");
+
+            List<String> titles = new ArrayList<String>();
+            titles.add(title);
+
+            String publisher = "Lorum Ipsum Light Source";
+
+            int publicationYear = 2016;
+
+            String resourceTypeGeneral = "Dataset";
+
+            String resourceType = "Experiment Data";
+
+            Properties properties = Properties.getInstance();
+            String landingPageUrl = properties.getProperty("topcatUrl") + "/topcat_doi_plugin/api/redirectToLandingPage/" + dataCollection.getId();
+
+            createDoi(doi, creatorNames, titles, publisher, publicationYear, resourceTypeGeneral, resourceType, landingPageUrl);
+
             return Response.ok().entity(Json.createObjectBuilder().add("id", dataCollection.getId()).add("doi", doi).build().toString()).build();
+        } catch(DataCiteClientException e){
+            return e.toResponse();
         } catch(Exception e){
             return Response.status(400).entity(Json.createObjectBuilder().add("message", e.toString()).build().toString()).build();
         }
@@ -480,14 +501,14 @@ public class RestApi {
             creatorElement.appendChild(creatorNameElement);
         }
 
-        for(String title : titles){
-            Element titlesElement = document.createElement("titles");
-            rootElement.appendChild(titlesElement);
+        Element titlesElement = document.createElement("titles");
+        rootElement.appendChild(titlesElement);
 
+        for(String title : titles){
             Element titleElement = document.createElement("title");
             titleElement.setAttribute("xml:lang", "en-gb");
             titleElement.appendChild(document.createTextNode(title));
-            titleElement.appendChild(titleElement);
+            titlesElement.appendChild(titleElement);
         }
 
         Element publisherElement = document.createElement("publisher");

@@ -67,11 +67,15 @@ public class HttpClient {
 
 		    return inputStreamToString(connection.getInputStream());
     	} catch (Exception e) {
-    		try {
-    			throw new DataCiteClientException(inputStreamToString(connection.getErrorStream()));
-    		} catch(Exception e2){
-    			throw new DataCiteClientException(e2.toString());
-    		}
+    		if(connection != null){
+	    		try {
+	    			throw new DataCiteClientException(inputStreamToString(connection.getErrorStream()));
+	    		} catch(Exception e2){
+	    			throw new DataCiteClientException(e2.getMessage());
+	    		}
+	    	} else {
+	    		throw new DataCiteClientException(e.getMessage());
+	    	}
 		} finally {
 			if (connection != null) {
 				connection.disconnect();
