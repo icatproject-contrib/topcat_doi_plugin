@@ -23,6 +23,7 @@ import javax.ws.rs.FormParam;
 import javax.ws.rs.PathParam;
 import javax.json.Json;
 import javax.json.JsonObjectBuilder;
+import javax.json.JsonArrayBuilder;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
@@ -64,6 +65,7 @@ import org.icatproject.Dataset;
 import org.icatproject.Investigation;
 import org.icatproject.DataCollectionDatafile;
 import org.icatproject.DataCollectionDataset;
+import org.icatproject.User;
 import org.icatproject.Login.Credentials;
 import org.icatproject.Login.Credentials.Entry;
 
@@ -217,6 +219,53 @@ public class RestApi {
             }
             
             return Response.status(200).entity("\"" + status.name() + "\"").build();
+        } catch(Exception e){
+            return Response.status(400).entity(Json.createObjectBuilder().add("message", e.toString()).build().toString()).build();
+        }
+    }
+
+    @GET
+    @Path("/users/{dataCollectionId}")
+    @Produces({MediaType.APPLICATION_JSON})
+    public Response getUsers(
+        @PathParam("dataCollectionId") Long dataCollectionId) throws Exception {
+
+        try {
+            Properties properties = Properties.getInstance();
+            String readerIcatUrl = properties.getProperty("readerIcatUrl");
+            String readerSessionId = readerSessionId();
+            ICAT icat = createIcat(readerIcatUrl );
+
+            List<String> users = new ArrayList<String>();
+
+            List<Object> datafileUsers = icat.search(readerSessionId, "select user from User user, user.investigationUsers as investigationUser, investigationUser.investigation as investigation, investigation.datasets as dataset, dataset.datafiles as datafile, datafile.dataCollectionDatafiles as dataCollectionDatafile, dataCollectionDatafile.dataCollection as dataCollection where dataCollection.id = " + dataCollectionId);
+            for(Object user : datafileUsers){
+                String fullName = ((User) user).getFullName();
+                if(fullName != null){
+                    if(!users.contains(fullName)){
+                        users.add(fullName);
+                    }
+                }
+            }
+
+
+            List<Object> datasetUsers = icat.search(readerSessionId, "select user from User user, user.investigationUsers as investigationUser, investigationUser.investigation as investigation, investigation.datasets as dataset, dataset.dataCollectionDatasets as dataCollectionDataset, dataCollectionDataset.dataCollection as dataCollection where dataCollection.id = " + dataCollectionId);
+            for(Object user : datasetUsers){
+                String fullName = ((User) user).getFullName();
+                if(fullName != null){
+                    if(!users.contains(fullName)){
+                        users.add(fullName);
+                    }
+                }
+            }
+
+            JsonArrayBuilder jsonArrayBuilder = Json.createArrayBuilder();
+
+            for(String user : users){
+                jsonArrayBuilder.add(user);
+            }
+
+            return Response.status(200).entity(jsonArrayBuilder.build()).build();
         } catch(Exception e){
             return Response.status(400).entity(Json.createObjectBuilder().add("message", e.toString()).build().toString()).build();
         }

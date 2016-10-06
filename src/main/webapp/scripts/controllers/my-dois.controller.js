@@ -40,6 +40,10 @@
                 {
                     "field": "dataCollectionParameter[entity.type.name == 'releaseDate'].dateTimeValue",
                     "title": "Release Date"
+                },
+                {
+                    "field": "createTime",
+                    "title": "Created"
                 }
             ]
         };
@@ -124,7 +128,7 @@
                 "where ",
                 "dataCollection.doi != null ",
                 "and ",
-                "user.name = :user ",
+                "(user.name = :user or dataCollection.createId = :user) ",
                 "limit ?, ?", (page - 1) * pageSize, pageSize,
                 "include dataCollection.parameters.type"
             ]]);
@@ -145,23 +149,24 @@
             gridApi = _gridApi;
 
             getPage().then(function(results){
+
                 gridOptions.data = results;
                 updateScroll(results.length);
             });
 
-            // gridApi.core.on.filterChanged($scope, function(){
-            //     canceler.resolve();
-            //     canceler = $q.defer();
-            //     page = 1;
-            //     gridOptions.data = [];
-            //     getPage().then(function(results){
-            //         gridOptions.data = results;
-            //         updateSelections();
-            //         updateScroll(results.length);
-            //         updateTotalItems();
-            //         saveState();
-            //     });
-            // });
+            gridApi.core.on.filterChanged($scope, function(){
+                canceler.resolve();
+                canceler = $q.defer();
+                page = 1;
+                gridOptions.data = [];
+                getPage().then(function(results){
+                    gridOptions.data = results;
+                    updateSelections();
+                    updateScroll(results.length);
+                    updateTotalItems();
+                    saveState();
+                });
+            });
 
             if(isScroll){
                 //scroll down more data callback (append data)

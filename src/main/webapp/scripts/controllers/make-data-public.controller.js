@@ -114,8 +114,6 @@
 
                     });
                     
-                    //tc.doiMinter().makePublicDataCollection(that.title, that.isReleaseDate ? that.releaseDate : "");
-                    //$uibModalStack.dismissAll();
                 } else {
                     that.password = "";
                     inform.add("Password is invalid - please try again", {
