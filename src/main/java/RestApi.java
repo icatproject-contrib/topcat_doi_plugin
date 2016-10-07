@@ -1,6 +1,9 @@
 
 package org.icatproject.topcatdoiplugin;
 
+import java.io.ByteArrayInputStream;
+import java.nio.charset.StandardCharsets;
+
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Map;
@@ -8,6 +11,7 @@ import java.util.Date;
 import java.util.GregorianCalendar;
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
+import java.text.SimpleDateFormat;
 
 
 import javax.ejb.LocalBean;
@@ -24,6 +28,12 @@ import javax.ws.rs.PathParam;
 import javax.json.Json;
 import javax.json.JsonObjectBuilder;
 import javax.json.JsonArrayBuilder;
+import javax.json.JsonValue;
+import javax.json.JsonNumber;
+import javax.json.JsonString;
+import javax.json.JsonArray;
+import javax.json.JsonObject;
+import javax.json.JsonReader;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
@@ -107,27 +117,41 @@ public class RestApi {
     @POST
     @Path("/makePublicDataCollection")
     @Produces({MediaType.APPLICATION_JSON})
-    public Response makePublicDataCollection(
-            @FormParam("icatUrl") String icatUrl,
-            @FormParam("sessionId") String sessionId,
-            @FormParam("datasetIds") String datasetIds,
-            @FormParam("datafileIds") String datafileIds,
-            @FormParam("title") String title,
-            @FormParam("releaseDate") String releaseDate) {
+    public Response makePublicDataCollection(@FormParam("json") String json) {
 
         try {
-            List<Long> datasetIdList = parseIds(datasetIds);
-            List<Long> datafileIdList = parseIds(datafileIds);
 
-            DataCollection dataCollection = createDataCollection(icatUrl, sessionId, title, new Date(), datasetIdList, datafileIdList);
-            String doi = generateEntityDoi("DataCollection", dataCollection.getId());
-            setEntityDoi(icatUrl, sessionId, "DataCollection", dataCollection.getId(), doi);
+            InputStream jsonInputStream = new ByteArrayInputStream(json.getBytes(StandardCharsets.UTF_8));
+            JsonReader jsonReader = Json.createReader(jsonInputStream);
+            JsonObject jsonObject = jsonReader.readObject();
+            jsonReader.close();
 
-            List<String> creatorNames = new ArrayList<String>();
-            creatorNames.add("Mr Foo");
+            String icatUrl = jsonObject.getString("icatUrl");
+
+            String sessionId = jsonObject.getString("sessionId");
 
             List<String> titles = new ArrayList<String>();
+            String title = jsonObject.getString("title");
             titles.add(title);
+
+            String description = jsonObject.getString("description");
+
+            List<String> creatorNames = new ArrayList<String>();
+            for(JsonValue creatorName : jsonObject.getJsonArray("creatorNames")){
+                creatorNames.add(((JsonString) creatorName).toString());
+            }
+
+            List<Long> datasetIds = new ArrayList<Long>();
+            for(JsonValue datasetId : jsonObject.getJsonArray("datasetIds")){
+                datasetIds.add(((JsonNumber) datasetId).longValue());
+            }
+
+            List<Long> datafileIds = new ArrayList<Long>();
+            for(JsonValue datafileId : jsonObject.getJsonArray("datafileIds")){
+                datafileIds.add(((JsonNumber) datafileId).longValue());
+            }
+
+            Date releaseDate = (new SimpleDateFormat()).parse(jsonObject.getString("releaseDate"));
 
             String publisher = "Lorum Ipsum Light Source";
 
@@ -137,10 +161,14 @@ public class RestApi {
 
             String resourceType = "Experiment Data";
 
+            DataCollection dataCollection = createDataCollection(icatUrl, sessionId, title, new Date(), datasetIds, datafileIds);
+            String doi = generateEntityDoi("DataCollection", dataCollection.getId());
+            setEntityDoi(icatUrl, sessionId, "DataCollection", dataCollection.getId(), doi);
+
             Properties properties = Properties.getInstance();
             String landingPageUrl = properties.getProperty("topcatUrl") + "/topcat_doi_plugin/api/redirectToLandingPage/" + dataCollection.getId();
 
-            createDoi(doi, creatorNames, titles, publisher, publicationYear, resourceTypeGeneral, resourceType, landingPageUrl);
+            createDoi(doi, titles, description, creatorNames, releaseDate, publisher, publicationYear, resourceTypeGeneral, resourceType, landingPageUrl);
 
             return Response.ok().entity(Json.createObjectBuilder().add("id", dataCollection.getId()).add("doi", doi).build().toString()).build();
         } catch(DataCiteClientException e){
@@ -345,18 +373,6 @@ public class RestApi {
         return out; 
     }
 
-    private List<Long> parseIds(String ids){
-        List<Long> out = new ArrayList<Long>();
-
-        if(ids != null && !ids.equals("")){
-            for (String id : ids.split("\\s*,\\s*")) {
-                out.add(Long.valueOf(id));
-            }
-        }
-
-        return out;
-    }
-
     private void setEntityDoi(String icatUrl, String sessionId, String entityType, Long entityId, String doi) throws Exception {
         ICAT icat = createIcat(icatUrl);
 
@@ -469,8 +485,10 @@ public class RestApi {
 
     private void createDoi(
         String doi,
-        List<String> creatorNames,
         List<String> titles,
+        String description,
+        List<String> creatorNames,
+        Date releaseDate,
         String publisher,
         int publicationYear,
         String resourceTypeGeneral,
