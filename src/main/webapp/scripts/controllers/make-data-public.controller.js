@@ -43,6 +43,7 @@
         this.creators = [];
         this.loaded = false;
         this.newCreator = "";
+        this.description = "";
 
         var datasetIds = [];
         var datafileIds = [];
@@ -124,7 +125,7 @@
     	};
 
     	this.isNextDisabled = function(){
-    		if(this.state == 'basic_details' && (!this.isReleaseDate || this.releaseDate != null) && this.title != ''){
+    		if(this.state == 'basic_details' && (!this.isReleaseDate || this.releaseDate != null) && this.title != '' && this.description != '' && this.creators.length > 0){
     			return false;
     		}
 
@@ -151,7 +152,7 @@
     	};
 
     	this.confirm = function(){
-            icat().verifyPassword(this.password).then(function(isValid){
+            icat.verifyPassword(this.password).then(function(isValid){
                 if(isValid){
                     facility.doiMinter().makePublicDataCollection(that.title, that.isReleaseDate ? that.releaseDate : "", datasetIds, datafileIds).then(function(){
                         user.deleteAllCartItems().then(function(){
