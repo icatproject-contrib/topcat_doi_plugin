@@ -64,6 +64,18 @@
                 }
             });
 
+            this.getUsers = helpers.overload({
+                'number, object': function(id, options){
+                    return this.get('users/' + id, {}, options);
+                },
+                'promise, number': function(timeout, id){
+                    return this.getUsers(id, {timeout: timeout});
+                },
+                'number': function(id){
+                    return this.getUsers(id, {});
+                }
+            });
+
             this.getStatus = helpers.overload({
                 'number, object': function(id, options){
                     return this.get('status/' + id, {}, options);

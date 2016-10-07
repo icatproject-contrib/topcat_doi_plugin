@@ -1,4 +1,5 @@
-<form>
+<div class="loading" ng-if="!makeDataPublicController.loaded">&nbsp;</div>
+<form ng-if="makeDataPublicController.loaded">
     <div class="modal-header">
         <h3 class="modal-title" translate="CART.MAKE_DATA_PUBLIC.TITLE"></h3>
     </div>
@@ -38,6 +39,24 @@
                     </button>
                 </span>
             </p>
+        </div>
+        <div ng-if="makeDataPublicController.state == 'basic_details'" class="form-group">
+            <label>Creators</label>
+            <div class="input-group" style="margin-top: 7px;" ng-repeat="creator in makeDataPublicController.creators">
+                <span class="form-control">{{creator}}</span>
+                <label class="input-group-addon">
+                    <button class="btn btn-primary btn-xs" style="font-size: 8px;" ng-click="makeDataPublicController.moveCreatorUp(creator)"><i class=" glyphicon glyphicon-arrow-up"></i></button>
+                    <button class="btn btn-primary btn-xs" style="font-size: 8px;" ng-click="makeDataPublicController.moveCreatorDown(creator)"><i class=" glyphicon glyphicon-arrow-down"></i></button>
+                    <button class="btn btn-primary btn-xs" style="font-size: 8px;" ng-click="makeDataPublicController.deleteCreator(creator)"><i class="glyphicon glyphicon-remove"></i></button>
+                </label>
+            </div>
+            <div class="input-group" style="margin-top: 7px;">
+                <input type="text" class="form-control" ng-keyup="$event.which === 13 && makeDataPublicController.addCreator();" ng-model="makeDataPublicController.newCreator">
+                <label class="input-group-addon">
+                <button class="btn btn-primary btn-xs" style="font-size: 8px;" ng-click="makeDataPublicController.addCreator()"><i class="glyphicon glyphicon-plus"></i></button>
+                </label>
+            </div>
+
         </div>
         <div ng-if="makeDataPublicController.state == 'legal'" class="form-group">
         	<label>Licence</label>

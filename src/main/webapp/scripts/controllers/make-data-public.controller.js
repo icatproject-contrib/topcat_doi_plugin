@@ -5,7 +5,7 @@
 
     var app = angular.module('topcat');
 
-    app.controller('MakeDataPublicController', function($uibModalInstance, $uibModalStack, $timeout, tc, inform){
+    app.controller('MakeDataPublicController', function($uibModalInstance, $uibModalStack, $timeout, $q, tc, inform){
         
         if(tc.userFacilities().length > 1){
             alert("This feature can't be used with multiple facilities.");
@@ -16,6 +16,10 @@
         }
 
         var that = this;
+        var facility = tc.userFacilities()[0];
+        var icat = facility.icat();
+        var user = facility.user();
+
     	this.state = 'basic_details';
         this.title = "";
     	this.isReleaseDate = false;
@@ -35,18 +39,77 @@
     		}
     	];
         this.termsAndConditions = "line 1\n line 2\nline 3\nline 4\nline 5\nline 6\nline 7\nline 8\nline 9\n"
-    	this.users = _.map(tc.userFacilities(), function(facility){
-            var session = facility.icat().session();
+        this.password = "";
+        this.creators = [];
+        this.loaded = false;
+        this.newCreator = "";
 
-            return {
-                name: (session.fullName ? session.fullName : session.username) + " (" + facility.config().title + ")",
-                facilityName: facility.config().name
-            };
+        var datasetIds = [];
+        var datafileIds = [];
+        user.cart().then(function(cart){
+            _.each(cart.cartItems,  function(cartItem){
+                if(cartItem.entityType == 'dataset') datasetIds.push(cartItem.entityId);
+                if(cartItem.entityType == 'datafile') datafileIds.push(cartItem.entityId);
+            });
+
+            var promises = [];
+
+            _.each(_.chunk(datasetIds, 100), function(datasetIds){
+                promises.push(icat.query(["select user from User user, user.investigationUsers as investigationUser, investigationUser.investigation as investigation, investigation.datasets as dataset where dataset.id in (?)", datasetIds.join(', ').safe()]).then(function(users){
+                    _.each(users, function(user){
+                        if(!_.includes(that.creators, user.fullName)){
+                            that.creators.push(user.fullName);
+                        }
+                    });
+                }));
+            });
+
+            _.each(_.chunk(datafileIds, 100), function(datafileIds){
+                promises.push(icat.query(["select user from User user, user.investigationUsers as investigationUser, investigationUser.investigation as investigation, investigation.datasets as dataset, dataset.datafiles as datafile where datafile.id in (?)", datafileIds.join(', ').safe()]).then(function(users){
+                    _.each(users, function(user){
+                        if(!_.includes(that.creators, user.fullName)){
+                            that.creators.push(user.fullName);
+                        }
+                    });
+                }));
+            });
+
+            $q.all(promises).then(function(){
+                that.loaded = true;
+            });
         });
 
-        this.facilityName = this.users[0].facilityName;
-        this.password = "";
+        this.moveCreatorUp = function(creator){
+            var position = _.indexOf(this.creators, creator);
+            var newPosition = position - 1;
+            if(newPosition >= 0){
+                this.creators[position] = this.creators[newPosition];
+                this.creators[newPosition] = creator;
+            }
+        };
 
+        this.moveCreatorDown = function(creator){
+            var position = _.indexOf(this.creators, creator);
+            var newPosition = position + 1;
+            if(newPosition < this.creators.length){
+                this.creators[position] = this.creators[newPosition];
+                this.creators[newPosition] = creator;
+            }
+        };
+
+        this.deleteCreator = function(creator){
+            this.creators = _.select(this.creators, function(currentCreator){
+                return currentCreator != creator;
+            });
+        };
+
+        this.addCreator = function(){
+            if(this.newCreator != "" && !_.includes(this.creators, this.newCreator)){
+                this.creators.push(this.newCreator);
+                this.newCreator = "";
+            }
+        };
+        
     	this.isPreviousDisabled = function(){
     		return this.state == 'basic_details';
     	};
@@ -88,32 +151,18 @@
     	};
 
     	this.confirm = function(){
-            tc.icat(this.facilityName).verifyPassword(this.password).then(function(isValid){
+            icat().verifyPassword(this.password).then(function(isValid){
                 if(isValid){
-                    var facility = tc.userFacilities()[0];
-                    var user = facility.user();
-                    user.cart().then(function(cart){
-                        var datasetIds = [];
-                        var datafileIds = [];
-
-                        _.each(cart.cartItems,  function(cartItem){
-                            if(cartItem.entityType == 'dataset') datasetIds.push(cartItem.entityId);
-                            if(cartItem.entityType == 'datafile') datafileIds.push(cartItem.entityId);
+                    facility.doiMinter().makePublicDataCollection(that.title, that.isReleaseDate ? that.releaseDate : "", datasetIds, datafileIds).then(function(){
+                        user.deleteAllCartItems().then(function(){
+                            window.location.reload();
                         });
-
-                        facility.doiMinter().makePublicDataCollection(that.title, that.isReleaseDate ? that.releaseDate : "", datasetIds, datafileIds).then(function(){
-                            user.deleteAllCartItems().then(function(){
-                                $uibModalStack.dismissAll();
-                            });
-                        }, function(response){
-                            inform.add(response.message, {
-                                'ttl': 3000,
-                                'type': 'danger'
-                            });
+                    }, function(response){
+                        inform.add(response.message, {
+                            'ttl': 3000,
+                            'type': 'danger'
                         });
-
                     });
-                    
                 } else {
                     that.password = "";
                     inform.add("Password is invalid - please try again", {

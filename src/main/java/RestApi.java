@@ -224,53 +224,6 @@ public class RestApi {
         }
     }
 
-    @GET
-    @Path("/users/{dataCollectionId}")
-    @Produces({MediaType.APPLICATION_JSON})
-    public Response getUsers(
-        @PathParam("dataCollectionId") Long dataCollectionId) throws Exception {
-
-        try {
-            Properties properties = Properties.getInstance();
-            String readerIcatUrl = properties.getProperty("readerIcatUrl");
-            String readerSessionId = readerSessionId();
-            ICAT icat = createIcat(readerIcatUrl );
-
-            List<String> users = new ArrayList<String>();
-
-            List<Object> datafileUsers = icat.search(readerSessionId, "select user from User user, user.investigationUsers as investigationUser, investigationUser.investigation as investigation, investigation.datasets as dataset, dataset.datafiles as datafile, datafile.dataCollectionDatafiles as dataCollectionDatafile, dataCollectionDatafile.dataCollection as dataCollection where dataCollection.id = " + dataCollectionId);
-            for(Object user : datafileUsers){
-                String fullName = ((User) user).getFullName();
-                if(fullName != null){
-                    if(!users.contains(fullName)){
-                        users.add(fullName);
-                    }
-                }
-            }
-
-
-            List<Object> datasetUsers = icat.search(readerSessionId, "select user from User user, user.investigationUsers as investigationUser, investigationUser.investigation as investigation, investigation.datasets as dataset, dataset.dataCollectionDatasets as dataCollectionDataset, dataCollectionDataset.dataCollection as dataCollection where dataCollection.id = " + dataCollectionId);
-            for(Object user : datasetUsers){
-                String fullName = ((User) user).getFullName();
-                if(fullName != null){
-                    if(!users.contains(fullName)){
-                        users.add(fullName);
-                    }
-                }
-            }
-
-            JsonArrayBuilder jsonArrayBuilder = Json.createArrayBuilder();
-
-            for(String user : users){
-                jsonArrayBuilder.add(user);
-            }
-
-            return Response.status(200).entity(jsonArrayBuilder.build()).build();
-        } catch(Exception e){
-            return Response.status(400).entity(Json.createObjectBuilder().add("message", e.toString()).build().toString()).build();
-        }
-    }
-
     @POST
     @Path("/prepareData/{dataCollectionId}")
     @Produces({MediaType.APPLICATION_JSON})
