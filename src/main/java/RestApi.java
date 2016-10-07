@@ -130,9 +130,7 @@ public class RestApi {
 
             String sessionId = jsonObject.getString("sessionId");
 
-            List<String> titles = new ArrayList<String>();
             String title = jsonObject.getString("title");
-            titles.add(title);
 
             String description = jsonObject.getString("description");
 
@@ -168,7 +166,7 @@ public class RestApi {
             Properties properties = Properties.getInstance();
             String landingPageUrl = properties.getProperty("topcatUrl") + "/topcat_doi_plugin/api/redirectToLandingPage/" + dataCollection.getId();
 
-            createDoi(doi, titles, description, creators, releaseDate, publisher, publicationYear, resourceTypeGeneral, resourceType, landingPageUrl);
+            createDoi(doi, title, description, creators, releaseDate, publisher, publicationYear, resourceTypeGeneral, resourceType, landingPageUrl);
 
             return Response.ok().entity(Json.createObjectBuilder().add("id", dataCollection.getId()).add("doi", doi).build().toString()).build();
         } catch(DataCiteClientException e){
@@ -485,7 +483,7 @@ public class RestApi {
 
     private void createDoi(
         String doi,
-        List<String> titles,
+        String title,
         String description,
         List<String> creators,
         Date releaseDate,
@@ -509,6 +507,22 @@ public class RestApi {
         identifierElement.appendChild(document.createTextNode(doi));
         rootElement.appendChild(identifierElement);
 
+
+        Element titlesElement = document.createElement("titles");
+        rootElement.appendChild(titlesElement);
+        Element titleElement = document.createElement("title");
+        titleElement.setAttribute("xml:lang", "en-gb");
+        titleElement.appendChild(document.createTextNode(title));
+        titlesElement.appendChild(titleElement);
+
+        Element descriptionsElement = document.createElement("descriptions");
+        rootElement.appendChild(descriptionsElement);
+        Element descriptionElement = document.createElement("description");
+        descriptionElement.setAttribute("xml:lang", "en-gb");
+        descriptionElement.setAttribute("descriptionType", "Abstract");
+        descriptionElement.appendChild(document.createTextNode(description));
+        descriptionsElement.appendChild(descriptionElement);
+
         Element creatorsElement = document.createElement("creators");
         rootElement.appendChild(creatorsElement);
 
@@ -521,15 +535,12 @@ public class RestApi {
             creatorElement.appendChild(creatorNameElement);
         }
 
-        Element titlesElement = document.createElement("titles");
-        rootElement.appendChild(titlesElement);
-
-        for(String title : titles){
-            Element titleElement = document.createElement("title");
-            titleElement.setAttribute("xml:lang", "en-gb");
-            titleElement.appendChild(document.createTextNode(title));
-            titlesElement.appendChild(titleElement);
-        }
+        Element datesElement = document.createElement("dates");
+        rootElement.appendChild(datesElement);
+        Element dateElement = document.createElement("date");
+        dateElement.setAttribute("dateType", "Available");
+        dateElement.appendChild(document.createTextNode((new SimpleDateFormat("yyyy-MM-dd")).format(releaseDate)));
+        datesElement.appendChild(dateElement);
 
         Element publisherElement = document.createElement("publisher");
         publisherElement.appendChild(document.createTextNode(publisher));
