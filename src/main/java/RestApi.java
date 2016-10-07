@@ -136,9 +136,9 @@ public class RestApi {
 
             String description = jsonObject.getString("description");
 
-            List<String> creatorNames = new ArrayList<String>();
-            for(JsonValue creatorName : jsonObject.getJsonArray("creatorNames")){
-                creatorNames.add(((JsonString) creatorName).toString());
+            List<String> creators = new ArrayList<String>();
+            for(JsonValue creator : jsonObject.getJsonArray("creators")){
+                creators.add(((JsonString) creator).toString());
             }
 
             List<Long> datasetIds = new ArrayList<Long>();
@@ -151,7 +151,7 @@ public class RestApi {
                 datafileIds.add(((JsonNumber) datafileId).longValue());
             }
 
-            Date releaseDate = (new SimpleDateFormat()).parse(jsonObject.getString("releaseDate"));
+            Date releaseDate = (new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")).parse(jsonObject.getString("releaseDate"));
 
             String publisher = "Lorum Ipsum Light Source";
 
@@ -168,7 +168,7 @@ public class RestApi {
             Properties properties = Properties.getInstance();
             String landingPageUrl = properties.getProperty("topcatUrl") + "/topcat_doi_plugin/api/redirectToLandingPage/" + dataCollection.getId();
 
-            createDoi(doi, titles, description, creatorNames, releaseDate, publisher, publicationYear, resourceTypeGeneral, resourceType, landingPageUrl);
+            createDoi(doi, titles, description, creators, releaseDate, publisher, publicationYear, resourceTypeGeneral, resourceType, landingPageUrl);
 
             return Response.ok().entity(Json.createObjectBuilder().add("id", dataCollection.getId()).add("doi", doi).build().toString()).build();
         } catch(DataCiteClientException e){
@@ -487,7 +487,7 @@ public class RestApi {
         String doi,
         List<String> titles,
         String description,
-        List<String> creatorNames,
+        List<String> creators,
         Date releaseDate,
         String publisher,
         int publicationYear,
@@ -512,12 +512,12 @@ public class RestApi {
         Element creatorsElement = document.createElement("creators");
         rootElement.appendChild(creatorsElement);
 
-        for(String creatorName : creatorNames){
+        for(String creator : creators){
             Element creatorElement = document.createElement("creator");
             creatorsElement.appendChild(creatorElement);
 
             Element creatorNameElement = document.createElement("creatorName");
-            creatorNameElement.appendChild(document.createTextNode(creatorName));
+            creatorNameElement.appendChild(document.createTextNode(creator));
             creatorElement.appendChild(creatorNameElement);
         }
 

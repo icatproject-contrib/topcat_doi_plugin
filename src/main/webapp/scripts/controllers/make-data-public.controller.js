@@ -154,7 +154,7 @@
     	this.confirm = function(){
             icat.verifyPassword(this.password).then(function(isValid){
                 if(isValid){
-                    facility.doiMinter().makePublicDataCollection(that.title, that.isReleaseDate ? that.releaseDate : "", datasetIds, datafileIds).then(function(){
+                    facility.doiMinter().makePublicDataCollection(that.title, that.description, that.creators, that.isReleaseDate ? that.releaseDate : new Date(), datasetIds, datafileIds).then(function(){
                         user.deleteAllCartItems().then(function(){
                             window.location.reload();
                         });
