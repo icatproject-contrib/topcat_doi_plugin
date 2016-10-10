@@ -162,7 +162,7 @@ public class RestApi {
 
             String resourceType = "Experiment Data";
 
-            DataCollection dataCollection = createDataCollection(icatUrl, sessionId, title, new Date(), datasetIds, datafileIds);
+            DataCollection dataCollection = createDataCollection(icatUrl, sessionId, title, releaseDate, datasetIds, datafileIds);
             String doi = generateEntityDoi("DataCollection", dataCollection.getId());
             setEntityDoi(icatUrl, sessionId, "DataCollection", dataCollection.getId(), doi);
 
@@ -282,7 +282,15 @@ public class RestApi {
         @FormParam("email") String email) throws Exception {
 
         try {
-            DataSelection dataSelection = dataCollectionToDataSelection(getDataCollection(dataCollectionId));
+            DataCollection dataCollection = getDataCollection(dataCollectionId);
+            for(DataCollectionParameter parameter : dataCollection.getParameters()){
+                Date now = new Date();
+                if(parameter.getType().getName().equals("releaseDate") && now.before(parameter.getDateTimeValue().toGregorianCalendar().getTime())){
+                    return Response.status(401).entity(Json.createObjectBuilder().add("message", "can't access data before release date").build().toString()).build();
+                }
+            }
+
+            DataSelection dataSelection = dataCollectionToDataSelection(dataCollection);
             Properties properties = Properties.getInstance();
             URL readerIdsUrl = new URL(properties.getProperty("readerIdsUrl"));
             IdsClient idsClient = new IdsClient(readerIdsUrl);
@@ -339,7 +347,7 @@ public class RestApi {
         String readerIcatUrl = properties.getProperty("readerIcatUrl");
         String readerSessionId = readerSessionId();
         ICAT icat = createIcat(readerIcatUrl);
-        return (DataCollection) icat.get(readerSessionId, "DataCollection dataCollection include dataCollection.dataCollectionDatafiles.datafile.dataset.investigation.facility, dataCollection.dataCollectionDatasets.dataset.investigation.facility", id);
+        return (DataCollection) icat.get(readerSessionId, "DataCollection dataCollection include dataCollection.dataCollectionDatafiles.datafile.dataset.investigation.facility, dataCollection.dataCollectionDatasets.dataset.investigation.facility, dataCollection.parameters.type", id);
     }
 
     private List<DataSelection> chunkDataSelection(DataSelection dataSelection){
