@@ -202,7 +202,11 @@ public class RestApi {
 
             jsonObjectBuilder.add("description",  xPath.compile("resource/descriptions/description").evaluate(document));
             
-            jsonObjectBuilder.add("releaseDate",  xPath.compile("resource/dates/date").evaluate(document));
+            String releaseDate = xPath.compile("resource/dates/date").evaluate(document);
+            jsonObjectBuilder.add("releaseDate",  releaseDate);
+            Date now = new Date();
+            jsonObjectBuilder.add("isReleased",  now.after((new SimpleDateFormat("yyyy-MM-dd")).parse(releaseDate)));
+
 
             jsonObjectBuilder.add("publisher",  xPath.compile("resource/publisher").evaluate(document));
 
