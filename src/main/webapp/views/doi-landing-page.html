@@ -1,12 +1,45 @@
 <br>
 
-<div class="container-fluid">
+<div class="container-fluid" ng-if="doiLandingPageController.title">
     <div class="row">
         <div class="col-sm-12">
-            <h1>{{doiLandingPageController.title}}</h1>
-            
-            <button class="btn btn-primary" ng-click="doiLandingPageController.download()">Download</button>
+
+        	<div class="jumbotron">
+				<h1>{{doiLandingPageController.title}}</h1>
+				<p>{{doiLandingPageController.description}}</p>
+				<p><button class="btn btn-primary btn-lg" ng-click="doiLandingPageController.download()">Download</button></p>
+
+				<div style="margin-top: 75px">
+					<div class="panel panel-default">
+						<div class="panel-heading">DOI</div>
+						<div class="panel-body">{{doiLandingPageController.doi}}</div>
+					</div>
+
+					<div class="panel panel-default">
+						<div class="panel-heading">Release Date</div>
+						<div class="panel-body">{{doiLandingPageController.releaseDate}}</div>
+					</div>
+
+					<div class="panel panel-default">
+						<div class="panel-heading">Creators</div>
+						<ul class="list-group">
+							<li class="list-group-item" ng-repeat="creator in doiLandingPageController.creators">{{creator}}</li>
+						</ul>
+					</div>
+
+					<div class="panel panel-default">
+						<div class="panel-heading">Publisher</div>
+						<div class="panel-body">{{doiLandingPageController.publisher}} ({{doiLandingPageController.publicationYear}})</div>
+					</div>
+				</div>
+
+			</div>
+
+			
+
         </div>
     </div>
 </div>
+
+
 

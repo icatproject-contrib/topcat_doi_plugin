@@ -11,8 +11,8 @@
         var entityId = parseInt($state.params.entityId);
         var facility = tc.facility(facilityName);
 
-        facility.doiMinter().landingPageInfo(entityId).then(function(landingPageInfo){
-        	that.title = landingPageInfo.title;
+        facility.doiMinter().metadata(entityId).then(function(metadata){
+            _.merge(that, metadata);
         });
 
         this.download = function(){

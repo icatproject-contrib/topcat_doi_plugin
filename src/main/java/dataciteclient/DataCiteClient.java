@@ -11,6 +11,7 @@ import java.io.*;
 import javax.xml.transform.*;
 import javax.xml.transform.dom.*;
 import javax.xml.transform.stream.*;
+import javax.xml.parsers.*;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,14 +31,33 @@ public class DataCiteClient {
 	}
 
 	public void setDoiMetadata(Document document) throws DataCiteClientException {
-		httpClient.post("metadata", createHeaders("application/xml;charset=UTF-8"), documentToString(document));
+		Map headers = createAuthorizationHeaders();
+		headers.put("Content-Type", "application/xml;charset=UTF-8");
+		httpClient.post("metadata", headers, documentToString(document));
+	}
+
+	public Document getDoiMetadata(String doi) throws DataCiteClientException {
+		try {
+			Map headers = createAuthorizationHeaders();
+			headers.put("Accept", "application/xml");
+			String xml = httpClient.get("metadata/" + doi, headers);
+			DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+	        DocumentBuilder builder = factory.newDocumentBuilder();
+	        return builder.parse(new ByteArrayInputStream(xml.getBytes("UTF-8")));
+	    } catch(DataCiteClientException e){
+	    	throw e;
+	    } catch(Exception e){
+	    	throw new DataCiteClientException(e.getMessage());
+	    }
 	}
 
 	public void mintDoi(String doi, String landingPageUrl) throws DataCiteClientException {
-		httpClient.post("doi", createHeaders("text/plain;charset=UTF-8"), "doi=" + doi + "\nurl=" + landingPageUrl);
+		Map headers = createAuthorizationHeaders();
+		headers.put("Content-Type", "text/plain;charset=UTF-8");
+		httpClient.post("doi", headers, "doi=" + doi + "\nurl=" + landingPageUrl);
 	}
 
-	private Map<String, String> createHeaders(String contentType){
+	private Map<String, String> createAuthorizationHeaders(){
 		Map out = new HashMap();
 
 		Properties properties = Properties.getInstance();
@@ -47,8 +67,6 @@ public class DataCiteClient {
 		String credentials = dataCiteUsername + ":" + dataCitePassword;
 		String encodedCredentials = Base64.getEncoder().encodeToString(credentials.getBytes());
 		out.put("Authorization", "Basic " + encodedCredentials);
-
-		out.put("Content-Type", contentType);
 
 		return out;
 	}

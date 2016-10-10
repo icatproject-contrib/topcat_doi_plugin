@@ -56,15 +56,15 @@
                 }
             });
 
-            this.landingPageInfo = helpers.overload({
+            this.metadata = helpers.overload({
                 'number, object': function(id, options){
-                    return this.get('landingPageInfo/' + id, {}, options);
+                    return this.get('metadata/' + id, {}, options);
                 },
                 'promise, number': function(timeout, id){
-                    return this.landingPageInfo(id, {timeout: timeout});
+                    return this.metadata(id, {timeout: timeout});
                 },
                 'number': function(id){
-                    return this.landingPageInfo(id, {});
+                    return this.metadata(id, {});
                 }
             });
 

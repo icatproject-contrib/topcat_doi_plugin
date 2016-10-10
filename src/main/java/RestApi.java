@@ -59,6 +59,9 @@ import java.io.*;
 import javax.xml.transform.*;
 import javax.xml.transform.dom.*;
 import javax.xml.transform.stream.*;
+import javax.xml.xpath.XPath;
+import javax.xml.xpath.XPathFactory;
+import javax.xml.xpath.XPathConstants;
 
 import java.net.URL;
 
@@ -177,9 +180,9 @@ public class RestApi {
     }
 
     @GET
-    @Path("/landingPageInfo/{dataCollectionId}")
+    @Path("/metadata/{dataCollectionId}")
     @Produces({MediaType.APPLICATION_JSON})
-    public Response getLandingPageInfo(
+    public Response getMetaData(
         @PathParam("dataCollectionId") Long dataCollectionId)  throws Exception {
 
         try {
@@ -188,14 +191,34 @@ public class RestApi {
             String readerSessionId = readerSessionId();
             ICAT icat = createIcat(readerIcatUrl);
             DataCollection dataCollection = (DataCollection) icat.get(readerSessionId, "DataCollection", dataCollectionId);
-            String title = ((DataCollectionParameter) icat.search(readerSessionId, "select dataCollectionParameter from DataCollectionParameter dataCollectionParameter where dataCollectionParameter.type.name = 'title' and dataCollectionParameter.dataCollection.id = '" + dataCollectionId + "'").get(0)).getStringValue();
-            Date releaseDate = ((DataCollectionParameter) icat.search(readerSessionId, "select dataCollectionParameter from DataCollectionParameter dataCollectionParameter where dataCollectionParameter.type.name = 'releaseDate' and dataCollectionParameter.dataCollection.id = '" + dataCollectionId + "'").get(0)).getDateTimeValue().toGregorianCalendar().getTime();
-
+            DataCiteClient dataCiteClient = new DataCiteClient();
+            Document document = dataCiteClient.getDoiMetadata(dataCollection.getDoi());
+            XPath xPath =  XPathFactory.newInstance().newXPath();
             JsonObjectBuilder jsonObjectBuilder = Json.createObjectBuilder();
-            jsonObjectBuilder.add("title", title);
-            jsonObjectBuilder.add("releaseDate", releaseDate.toString());
+
+            jsonObjectBuilder.add("doi",  xPath.compile("resource/identifier").evaluate(document));
+
+            jsonObjectBuilder.add("title",  xPath.compile("resource/titles/title").evaluate(document));
+
+            jsonObjectBuilder.add("description",  xPath.compile("resource/descriptions/description").evaluate(document));
             
+            jsonObjectBuilder.add("releaseDate",  xPath.compile("resource/dates/date").evaluate(document));
+
+            jsonObjectBuilder.add("publisher",  xPath.compile("resource/publisher").evaluate(document));
+
+            jsonObjectBuilder.add("publicationYear",  xPath.compile("resource/publicationYear").evaluate(document));
+            
+            JsonArrayBuilder jsonArrayBuilder = Json.createArrayBuilder();
+            NodeList creators = (NodeList) xPath.compile("resource/creators/creator").evaluate(document, XPathConstants.NODESET);
+            for(int i = 0; i < creators.getLength(); i++){
+                Node creator = creators.item(i);
+                jsonArrayBuilder.add(xPath.compile("creatorName").evaluate(creator));
+            }
+            jsonObjectBuilder.add("creators",  jsonArrayBuilder.build());
+
             return Response.status(200).entity(jsonObjectBuilder.build().toString()).build();
+        } catch(DataCiteClientException e){
+            return e.toResponse();
         } catch(Exception e){
             return Response.status(400).entity(Json.createObjectBuilder().add("message", e.toString()).build().toString()).build();
         }
