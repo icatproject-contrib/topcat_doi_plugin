@@ -52,6 +52,10 @@
         };
         helpers.setupIcatGridOptions(gridOptions, "dataCollection");
         this.gridOptions = gridOptions;
+        var canceler = $q.defer();
+        $scope.$on('$destroy', function(){
+            canceler.resolve();
+        });
 
 
         function getPage(){
@@ -74,9 +78,68 @@
                 'left outer join investigationUser2.user user2',
 
                 'where dataCollection.doi != null and',
-                '(user1.name = :user or user2.name = :user)',
+                '(user1.name = :user or user2.name = :user) and ',
 
-                //"parameter.type.name = 'title' and parameter.stringValue like concat('%', ?, '%')", 're',
+                function(){
+                    var out = [];
+
+                    //doi
+                    if(gridOptions.columnDefs[0].filter && gridOptions.columnDefs[0].filter.term){
+                        out.push([
+                            "UPPER(dataCollection.doi) like concat('%', ?, '%') and", 
+                            gridOptions.columnDefs[0].filter.term.toUpperCase(),
+                        ]);
+                    }
+
+                    //title
+                    if(gridOptions.columnDefs[1].filter && gridOptions.columnDefs[1].filter.term){
+                        out.push([
+                            "parameter.type.name = 'title' and UPPER(parameter.stringValue) like concat('%', ?, '%') and", 
+                            gridOptions.columnDefs[1].filter.term.toUpperCase()
+                        ]);
+                    }
+
+                    //release date
+                    if(gridOptions.columnDefs[2].filters){
+                        var from = gridOptions.columnDefs[2].filters[0].term || '';
+                        var to = gridOptions.columnDefs[2].filters[1].term || '';
+                        if(from != '' || to != ''){
+                            from = helpers.completePartialFromDate(from);
+                            to = helpers.completePartialToDate(to);
+                            out.push([
+                                "parameter.type.name = 'releaseDate' and parameter.dateTimeValue between {ts ?} and {ts ?} and",
+                                from.safe(),
+                                to.safe()
+                            ]);
+                        }
+                    }
+
+                    //created by
+                    if(gridOptions.columnDefs[3].filter && gridOptions.columnDefs[3].filter.term){
+                        out.push([
+                            "UPPER(dataCollection.createId) like concat('%', ?, '%') and", 
+                            gridOptions.columnDefs[3].filter.term.toUpperCase()
+                        ]);
+                    }
+
+                    if(gridOptions.columnDefs[4].filters){
+                        var from = gridOptions.columnDefs[4].filters[0].term || '';
+                        var to = gridOptions.columnDefs[4].filters[1].term || '';
+                        if(from != '' || to != ''){
+                            from = helpers.completePartialFromDate(from);
+                            to = helpers.completePartialToDate(to);
+                            out.push([
+                                "dataCollection.createTime between {ts ?} and {ts ?} and",
+                                from.safe(),
+                                to.safe()
+                            ]);
+                        }
+                    }
+
+                    out.push('1 = 1');
+
+                    return out;
+                },
 
                 'limit ?, ?', (page - 1) * pageSize, pageSize,
 
@@ -102,6 +165,26 @@
             getPage().then(function(results){
                 gridOptions.data = results;
                 updateScroll(results.length);
+            });
+
+            gridApi.core.on.sortChanged($scope, function(grid, _sortColumns){
+                sortColumns = _sortColumns;
+                page = 1;
+                getPage().then(function(results){
+                    updateScroll(results.length);
+                    gridOptions.data = results;
+                });
+            });
+
+            gridApi.core.on.filterChanged($scope, function(){
+                canceler.resolve();
+                canceler = $q.defer();
+                page = 1;
+                gridOptions.data = [];
+                getPage().then(function(results){
+                    gridOptions.data = results;
+                    updateScroll(results.length);
+                });
             });
 
             gridApi.core.on.filterChanged($scope, function(){
