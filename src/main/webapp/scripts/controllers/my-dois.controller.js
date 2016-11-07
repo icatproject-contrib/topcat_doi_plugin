@@ -13,9 +13,7 @@
         }
 
         var page = 1;
-        var pageSize = 10;
-        var chunk = 1;
-        var chunkSize = 100;
+        var pageSize = 50;
         var facilityName = $state.params.facilityName;
         this.facilityName = facilityName;
         var facility = tc.facility(facilityName);
@@ -30,7 +28,8 @@
             "columnDefs": [
                 {
                     "field": "doi",
-                    "title": "DOI"
+                    "title": "DOI",
+                    "cellTemplate": "<div class='ui-grid-cell-contents'><a ui-sref=\"doi-landing-page({facilityName: grid.appScope.facilityName, entityId: row.entity.id})\">{{row.entity.doi}}</a></div>"
                 },
                 {
                     "field": "dataCollectionParameter[entity.type.name == 'title'].stringValue",
@@ -42,96 +41,48 @@
                     "title": "Release Date"
                 },
                 {
+                    "field": "createId",
+                    "title": "Created By"
+                },
+                {
                     "field": "createTime",
-                    "title": "Created"
+                    "title": "Created Time"
                 }
             ]
         };
         helpers.setupIcatGridOptions(gridOptions, "dataCollection");
         this.gridOptions = gridOptions;
 
-        var resultsBuffer = [];
-        var isDuplicate = {};
 
         function getPage(){
-            return getResults().then(function(){
-                var offset = (page - 1) * pageSize;
-                return _.slice(resultsBuffer, offset, offset + pageSize);
-            });
-        }   
+            return icat.query([
+                'select distinct dataCollection from DataCollection dataCollection',
 
-        function getResults(){
-            return getChunks().then(function(isMore){
-                if(resultsBuffer.length < page * pageSize && isMore){
-                    return getResults();
-                } else {
-                    return $q.resolve();
-                }
-            });
-        }
+                ', dataCollection.parameters as parameter',
 
-        function getChunks(){
-            var promises = [];
+                'left outer join dataCollection.dataCollectionDatafiles dataCollectionDatafile',
+                'left outer join dataCollectionDatafile.datafile datafile',
+                'left outer join datafile.dataset dataset1',
+                'left outer join dataset1.investigation investigation1',
+                'left outer join investigation1.investigationUsers investigationUser1',
+                'left outer join investigationUser1.user user1',
 
-            var resultCount = 0;
+                'left outer join dataCollection.dataCollectionDatasets dataCollectionDataset',
+                'left outer join dataCollectionDataset.dataset dataset2',
+                'left outer join dataset2.investigation investigation2',
+                'left outer join investigation2.investigationUsers investigationUser2',
+                'left outer join investigationUser2.user user2',
 
-            promises.push(icat.query(buildQuery('dataset', chunk, chunkSize)).then(function(results){
-                resultCount += results.length;
-                _.each(results, function(result){
-                    if(!isDuplicate[result.id]){
-                        resultsBuffer.push(result);
-                        isDuplicate[result.id] = true;
-                    }
-                });
-            }));
+                'where dataCollection.doi != null and',
+                '(user1.name = :user or user2.name = :user)',
 
-            promises.push(icat.query(buildQuery('datafile', chunk, chunkSize)).then(function(results){
-                resultCount += results.length;
-                _.each(results, function(result){
-                    if(!isDuplicate[result.id]){
-                        resultsBuffer.push(result);
-                        isDuplicate[result.id] = true;
-                    }
-                });
-            }));
+                //"parameter.type.name = 'title' and parameter.stringValue like concat('%', ?, '%')", 're',
 
-            chunk++;
+                'limit ?, ?', (page - 1) * pageSize, pageSize,
 
-            return $q.all(promises).then(function(){
-                return resultCount > 0;
-            });
-        }
+                'include dataCollection.parameters.type'
+            ]);
 
-        function buildQuery(type, page, pageSize){
-            var out = [
-                "select dataCollection from",
-                "DataCollection dataCollection, "
-            ];
-
-            if(type == 'dataset'){
-                out = _.flatten([out, [
-                    "dataCollection.dataCollectionDatasets as dataCollectionDataset, ",
-                    "dataCollectionDataset.dataset as dataset, "
-                ]]);
-            } else {
-                out = _.flatten([out, [
-                    "dataCollection.dataCollectionDatafiles as dataCollectionDatafile, ",
-                    "dataCollectionDatafile.datafile as datafile, ",
-                    "datafile.dataset as dataset, "
-                ]]);
-            }
-
-            return _.flatten([out, [
-                "dataset.investigation as investigation, ",
-                "investigation.investigationUsers as investigationUser, ",
-                "investigationUser.user as user ",
-                "where ",
-                "dataCollection.doi != null ",
-                "and ",
-                "(user.name = :user or dataCollection.createId = :user) ",
-                "limit ?, ?", (page - 1) * pageSize, pageSize,
-                "include dataCollection.parameters.type"
-            ]]);
         }
 
         function updateScroll(resultCount){
@@ -149,7 +100,6 @@
             gridApi = _gridApi;
 
             getPage().then(function(results){
-
                 gridOptions.data = results;
                 updateScroll(results.length);
             });
@@ -161,10 +111,7 @@
                 gridOptions.data = [];
                 getPage().then(function(results){
                     gridOptions.data = results;
-                    updateSelections();
                     updateScroll(results.length);
-                    updateTotalItems();
-                    saveState();
                 });
             });
 
