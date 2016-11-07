@@ -162,16 +162,17 @@ public class RestApi {
 
             String resourceType = "Experiment Data";
 
+
             DataCollection dataCollection = createDataCollection(icatUrl, sessionId, title, releaseDate, datasetIds, datafileIds);
             String doi = generateEntityDoi("DataCollection", dataCollection.getId());
             setEntityDoi(icatUrl, sessionId, "DataCollection", dataCollection.getId(), doi);
 
             Properties properties = Properties.getInstance();
-            String landingPageUrl = properties.getProperty("topcatUrl") + "/topcat_doi_plugin/api/redirectToLandingPage/" + dataCollection.getId();
-
+            String landingPageUrl = properties.getProperty("topcatUrl") + "/topcat_doi_plugin/api/redirectToLandingPage/";
+            
             createDoi(doi, title, description, creators, releaseDate, publisher, publicationYear, resourceTypeGeneral, resourceType, landingPageUrl);
 
-            return Response.ok().entity(Json.createObjectBuilder().add("id", dataCollection.getId()).add("doi", doi).build().toString()).build();
+            return Response.ok().entity(Json.createObjectBuilder().add("id", 3242).add("doi", "sdfs").build().toString()).build();
         } catch(DataCiteClientException e){
             return e.toResponse();
         } catch(Exception e){
