@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.Map;
 import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.Calendar;
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
 import java.text.SimpleDateFormat;
@@ -154,14 +155,16 @@ public class RestApi {
 
             Date releaseDate = (new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")).parse(jsonObject.getString("releaseDate"));
 
-            String publisher = "Lorum Ipsum Light Source";
+            String publisher = jsonObject.getString("publisher");
 
-            int publicationYear = 2016;
+            int publicationYear = Calendar.getInstance().get(Calendar.YEAR);
 
             String resourceTypeGeneral = "Dataset";
 
             String resourceType = "Experiment Data";
 
+            String licenceName = jsonObject.getString("licenceName");
+            String licenceUrl = jsonObject.getString("licenceUrl");
 
             DataCollection dataCollection = createDataCollection(icatUrl, sessionId, title, releaseDate, datasetIds, datafileIds);
             String doi = generateEntityDoi("DataCollection", dataCollection.getId());
@@ -170,7 +173,7 @@ public class RestApi {
             Properties properties = Properties.getInstance();
             String landingPageUrl = properties.getProperty("topcatUrl") + "/topcat_doi_plugin/api/redirectToLandingPage/";
             
-            createDoi(doi, title, description, creators, releaseDate, publisher, publicationYear, resourceTypeGeneral, resourceType, landingPageUrl);
+            createDoi(doi, title, description, creators, releaseDate, publisher, publicationYear, resourceTypeGeneral, resourceType, licenceName, licenceUrl, landingPageUrl);
 
             return Response.ok().entity(Json.createObjectBuilder().add("id", 3242).add("doi", "sdfs").build().toString()).build();
         } catch(DataCiteClientException e){
@@ -220,6 +223,9 @@ public class RestApi {
                 jsonArrayBuilder.add(xPath.compile("creatorName").evaluate(creator));
             }
             jsonObjectBuilder.add("creators",  jsonArrayBuilder.build());
+
+            jsonObjectBuilder.add("licenceName",  xPath.compile("resource/rightsList/rights").evaluate(document));
+            jsonObjectBuilder.add("licenceUrl",  xPath.compile("resource/rightsList/rights/@rightsURI").evaluate(document));
 
             return Response.status(200).entity(jsonObjectBuilder.build().toString()).build();
         } catch(DataCiteClientException e){
@@ -527,6 +533,8 @@ public class RestApi {
         int publicationYear,
         String resourceTypeGeneral,
         String resourceType,
+        String licenceName,
+        String licenceUrl,
         String landingPageUrl) throws Exception {
 
         String seedXml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><resource xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns=\"http://datacite.org/schema/kernel-4\" xsi:schemaLocation=\"http://datacite.org/schema/kernel-4 http://schema.datacite.org/meta/kernel-4/metadata.xsd\"></resource>";
@@ -590,6 +598,13 @@ public class RestApi {
         resourceTypeElement.setAttribute("resourceTypeGeneral", resourceTypeGeneral);
         resourceTypeElement.appendChild(document.createTextNode(resourceType));
         rootElement.appendChild(resourceTypeElement);
+
+        Element rightsListElement = document.createElement("rightsList");
+        rootElement.appendChild(rightsListElement);
+        Element rightsElement = document.createElement("rights");
+        rightsElement.setAttribute("rightsURI", licenceUrl);
+        rightsElement.appendChild(document.createTextNode(licenceName));
+        rightsListElement.appendChild(rightsElement);
 
         DataCiteClient dataCiteClient = new DataCiteClient();
 

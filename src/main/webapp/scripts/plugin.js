@@ -16,6 +16,7 @@ registerTopcatPlugin(function(pluginUrl){
 
 		configSchema: {
 			doi: {
+				publisher: {_type: 'string'},
 				licences: {
 					_type: 'array',
 					_item: {

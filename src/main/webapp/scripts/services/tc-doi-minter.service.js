@@ -21,7 +21,7 @@
             };
 
     		this.makePublicDataCollection = helpers.overload({
-    			'string, string, array, object, array, array, object': function(title, description, creators, releaseDate, datasetIds, datafileIds, options){
+    			'string, string, array, object, string, string, array, array, object': function(title, description, creators, releaseDate, licenceName, licenceUrl, datasetIds, datafileIds, options){
     				return this.post('makePublicDataCollection', {
     					json: JSON.stringify({
                             icatUrl: facility.config().icatUrl,
@@ -30,16 +30,19 @@
                             description: description,
                             creators: creators,
                             releaseDate: releaseDate.toISOString().replace(/^(\d\d\d\d-\d\d+-\d\d+)T(\d\d:\d\d:\d\d).*$/, '$1 $2'),
+                            licenceName: licenceName,
+                            licenceUrl: licenceUrl,
                             datasetIds: datasetIds,
-                            datafileIds: datafileIds
+                            datafileIds: datafileIds,
+                            publisher: this.config().publisher
                         })
     				}, options);
     			},
-    			'promise, string, string, array, object, array, array': function(timeout, title, description, creators, releaseDate, datasetIds, datafileIds){
-    				return this.makePublicDataCollection(title, description, creators, releaseDate, datasetIds, datafileIds, {timeout: timeout});
+    			'promise, string, string, array, object, string, string, array, array': function(timeout, title, description, creators, releaseDate, datasetIds, datafileIds){
+    				return this.makePublicDataCollection(title, description, creators, releaseDate, licenceName, licenceUrl, datasetIds, datafileIds, {timeout: timeout});
     			},
-    			'string, string, array, object, array, array': function(title, description, creators, releaseDate, datasetIds, datafileIds){
-    				return this.makePublicDataCollection(title, description, creators, releaseDate, datasetIds, datafileIds, {});
+    			'string, string, array, object, string, string, array, array': function(title, description, creators, releaseDate, licenceName, licenceUrl, datasetIds, datafileIds){
+    				return this.makePublicDataCollection(title, description, creators, releaseDate, licenceName, licenceUrl, datasetIds, datafileIds, {});
     			}
     		});
 
