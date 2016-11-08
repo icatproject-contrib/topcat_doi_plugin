@@ -80,13 +80,27 @@
     		    </label>
     		</div>
         </div>
-        <div ng-if="makeDataPublicController.state == 'confirm' && makeDataPublicController.users.length > 1" class="form-group">
-            <label>Select account</label>
-            <select
-                class="form-control"
-                ng-model="makeDataPublicController.facilityName"
-                ng-options="user.facilityName as user.name for user in makeDataPublicController.users">
-            </select>
+        <div ng-if="makeDataPublicController.state == 'confirm'" class="form-group">
+            <label>Title</label>
+            <p>{{makeDataPublicController.title}}</p>
+        </div>
+        <div ng-if="makeDataPublicController.state == 'confirm'" class="form-group">
+            <label>Description</label>
+            <p>{{makeDataPublicController.description}}</p>
+        </div>
+        <div ng-if="makeDataPublicController.state == 'confirm'" class="form-group">
+            <label>Creators</label>
+            <ul>
+                <li ng-repeat="creator in makeDataPublicController.creators">{{creator}}</li>
+            </ul>
+        </div>
+        <div ng-if="makeDataPublicController.state == 'confirm'" class="form-group">
+            <label>Release Date</label>
+            <p>{{makeDataPublicController.computedReleaseDate | date:'yyyy-MM-dd'}}</p>
+        </div>
+        <div ng-if="makeDataPublicController.state == 'confirm'" class="form-group">
+            <label>Licence</label>
+            <p>{{makeDataPublicController.licence.name}}</p>
         </div>
         <div ng-if="makeDataPublicController.state == 'confirm'" class="form-group">
             <label>Are you really sure you want to make this data public?</label>

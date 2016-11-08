@@ -154,6 +154,7 @@
     			this.state = 'legal';
 	    	} else if(this.state == 'legal' && this.licence != null && this.hasAcceptedLegal){
 	    		this.state = 'confirm';
+                this.computedReleaseDate = this.isReleaseDate ? this.releaseDate : new Date();
 	    	}
     	};
 
@@ -164,7 +165,7 @@
     	this.confirm = function(){
             icat.verifyPassword(this.password).then(function(isValid){
                 if(isValid){
-                    facility.doiMinter().makePublicDataCollection(that.title, that.description, that.creators, that.isReleaseDate ? that.releaseDate : new Date(), that.licence.name, that.licence.url, datasetIds, datafileIds).then(function(){
+                    facility.doiMinter().makePublicDataCollection(that.title, that.description, that.creators, that.computedReleaseDate, that.licence.name, that.licence.url, datasetIds, datafileIds).then(function(){
                         user.deleteAllCartItems().then(function(){
                             window.location.reload();
                         });
