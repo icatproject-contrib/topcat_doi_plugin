@@ -1,4 +1,7 @@
-<form>
+<div ng-if="!doiLandingPageDownloadController.status">
+    <br><div class="loading">&nbsp;</div><br><br>
+</div>
+<form ng-if="doiLandingPageDownloadController.status"">
     <div class="modal-header">
         <h3 class="modal-title" translate="LANDING_PAGE.DOWNLOAD.TITLE"></h3>
     </div>
