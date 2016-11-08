@@ -54,6 +54,7 @@
             });
 
             var promises = [];
+            var investigations = [];
 
             _.each(_.chunk(datasetIds, 100), function(datasetIds){
                 promises.push(icat.query(["select user from User user, user.investigationUsers as investigationUser, investigationUser.investigation as investigation, investigation.datasets as dataset where dataset.id in (?)", datasetIds.join(', ').safe()]).then(function(users){
@@ -61,6 +62,12 @@
                         if(!_.includes(that.creators, user.fullName)){
                             that.creators.push(user.fullName);
                         }
+                    });
+                }));
+
+                promises.push(icat.query(["select investigation from Investigation investigation, investigation.datasets dataset where dataset.id in (?)", datasetIds.join(', ').safe()]).then(function(currentInvestigations){
+                    _.each(currentInvestigations, function(investigation){
+                        investigations.push(investigation);
                     });
                 }));
             });
@@ -73,9 +80,21 @@
                         }
                     });
                 }));
+
+                promises.push(icat.query(["select investigation from Investigation investigation, investigation.datasets dataset, dataset.datafiles datafile where datafile.id in (?)", datafileIds.join(', ').safe()]).then(function(currentInvestigations){
+                    _.each(currentInvestigations, function(investigation){
+                        investigations.push(investigation);
+                    });
+                }));
             });
 
+            
+
             $q.all(promises).then(function(){
+                if(investigations.length > 0){
+                    that.title = investigations[0].title;
+                    that.description = investigations[0].summary;
+                }
                 that.loaded = true;
             });
         });
