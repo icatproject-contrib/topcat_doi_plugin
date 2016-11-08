@@ -19,6 +19,8 @@
         var facility = tc.facility(facilityName);
         var icat = facility.icat();
         var gridApi;
+        var sortColumns = [];
+
 
         var isScroll = true;
         this.isScroll = isScroll;
@@ -29,24 +31,30 @@
                 {
                     "field": "doi",
                     "title": "DOI",
-                    "cellTemplate": "<div class='ui-grid-cell-contents'><a ui-sref=\"doi-landing-page({facilityName: grid.appScope.facilityName, entityId: row.entity.id})\">{{row.entity.doi}}</a></div>"
+                    "cellTemplate": "<div class='ui-grid-cell-contents'><a ui-sref=\"doi-landing-page({facilityName: grid.appScope.facilityName, entityId: row.entity.id})\">{{row.entity.doi}}</a></div>",
+                    "orderByField": "dataCollection.doi"
                 },
                 {
                     "field": "dataCollectionParameter[entity.type.name == 'title'].stringValue",
                     "title": "Title",
-                    "cellTemplate": "<div class='ui-grid-cell-contents'><a ui-sref=\"doi-landing-page({facilityName: grid.appScope.facilityName, entityId: row.entity.id})\">{{row.entity.find(&quot;dataCollectionParameter[entity.type.name == 'title'].stringValue&quot;)[0]}}</a></div>"
+                    "cellTemplate": "<div class='ui-grid-cell-contents'><a ui-sref=\"doi-landing-page({facilityName: grid.appScope.facilityName, entityId: row.entity.id})\">{{row.entity.find(&quot;dataCollectionParameter[entity.type.name == 'title'].stringValue&quot;)[0]}}</a></div>",
+                    "orderByField": "titleParameter.stringValue"
+                
                 },
                 {
                     "field": "dataCollectionParameter[entity.type.name == 'releaseDate'].dateTimeValue",
-                    "title": "Release Date"
+                    "title": "Release Date",
+                    "orderByField": "releaseDateParameter.dateTimeValue"
                 },
                 {
                     "field": "createId",
-                    "title": "Created By"
+                    "title": "Created By",
+                    "orderByField": "dataCollection.createId"
                 },
                 {
                     "field": "createTime",
-                    "title": "Created Time"
+                    "title": "Created Time",
+                    "orderByField": "dataCollection.createTime"
                 }
             ]
         };
@@ -62,7 +70,8 @@
             return icat.query([
                 'select distinct dataCollection from DataCollection dataCollection',
 
-                ', dataCollection.parameters as parameter',
+                'left outer join dataCollection.parameters as titleParameter',
+                'left outer join dataCollection.parameters as releaseDateParameter',
 
                 'left outer join dataCollection.dataCollectionDatafiles dataCollectionDatafile',
                 'left outer join dataCollectionDatafile.datafile datafile',
@@ -78,6 +87,8 @@
                 'left outer join investigationUser2.user user2',
 
                 'where dataCollection.doi != null and',
+                "titleParameter.type.name = 'title' and",
+                "releaseDateParameter.type.name = 'releaseDate' and",
                 '(user1.name = :user or user2.name = :user) and ',
 
                 function(){
@@ -94,7 +105,7 @@
                     //title
                     if(gridOptions.columnDefs[1].filter && gridOptions.columnDefs[1].filter.term){
                         out.push([
-                            "parameter.type.name = 'title' and UPPER(parameter.stringValue) like concat('%', ?, '%') and", 
+                            "UPPER(titleParameter.stringValue) like concat('%', ?, '%') and", 
                             gridOptions.columnDefs[1].filter.term.toUpperCase()
                         ]);
                     }
@@ -107,7 +118,7 @@
                             from = helpers.completePartialFromDate(from);
                             to = helpers.completePartialToDate(to);
                             out.push([
-                                "parameter.type.name = 'releaseDate' and parameter.dateTimeValue between {ts ?} and {ts ?} and",
+                                "releaseDateParameter.dateTimeValue between {ts ?} and {ts ?} and",
                                 from.safe(),
                                 to.safe()
                             ]);
@@ -137,6 +148,12 @@
                     }
 
                     out.push('1 = 1');
+
+                    var orderBy = _.map(sortColumns, function(sortColumn){
+                        return sortColumn.colDef.orderByField + " " + sortColumn.sort.direction;
+                    });
+
+                    if(orderBy.length > 0)out.push("order by ?", orderBy.join(', ').safe());
 
                     return out;
                 },
