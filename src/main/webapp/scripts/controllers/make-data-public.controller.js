@@ -28,16 +28,7 @@
     	this.licence = null;
     	this.hasAcceptedLegal = false;
     	this.dateFormat = 'yyyy-MM-dd';
-    	this.licences = [
-    		{
-    			name: 'mit',
-    			title: 'MIT'
-    		},
-    		{
-    			name: 'cc',
-    			title: 'Creative Commons'
-    		}
-    	];
+    	this.licences = facility.doiMinter().config().licences;
         this.termsAndConditions = "line 1\n line 2\nline 3\nline 4\nline 5\nline 6\nline 7\nline 8\nline 9\n"
         this.password = "";
         this.creators = [];

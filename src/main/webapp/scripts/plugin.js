@@ -15,7 +15,16 @@ registerTopcatPlugin(function(pluginUrl){
 		],
 
 		configSchema: {
-
+			doi: {
+				licences: {
+					_type: 'array',
+					_item: {
+						name: {_type: 'string'},
+						url: {_type: 'string'},
+						terms: {_type: "string"}
+					}
+				}
+			}
 		},
 
 		setup: function($uibModal, tc, tcDoiMinter){

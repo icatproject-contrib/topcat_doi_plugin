@@ -67,12 +67,12 @@
         		class="form-control"
         		ng-change="makeDataPublicController.hasAcceptedLegal = false"
         		ng-model="makeDataPublicController.licence"
-        		ng-options="licence.name as licence.title for licence in makeDataPublicController.licences">
+        		ng-options="licence.name for licence in makeDataPublicController.licences">
             </select>
         </div>
         <div ng-if="makeDataPublicController.state == 'legal' && makeDataPublicController.licence" class="form-group">
         	<label>Terms and Conditions</label>
-            <div class="terms-and-conditions">{{makeDataPublicController.termsAndConditions}}</div>
+            <div class="terms-and-conditions">{{makeDataPublicController.licence.terms}}</div>
         	<div class="checkbox">
     		    <label>
     		    	<input type="checkbox" ng-model="makeDataPublicController.hasAcceptedLegal">

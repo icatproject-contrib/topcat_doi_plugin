@@ -4,7 +4,7 @@
 
     var app = angular.module('topcat');
 
-    app.service('tcDoiMinter', function(tc, helpers){
+    app.service('tcDoiMinter', function(tc, helpers, APP_CONFIG){
 
     	this.create = function(pluginUrl, facility){
     		return new DoiMinter(pluginUrl, facility);
@@ -14,6 +14,10 @@
 
             this.pluginUrl = function(){
                 return pluginUrl;
+            };
+
+            this.config = function(){ 
+              return APP_CONFIG.doi;
             };
 
     		this.makePublicDataCollection = helpers.overload({
