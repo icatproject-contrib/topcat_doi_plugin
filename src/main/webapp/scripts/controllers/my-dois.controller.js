@@ -89,7 +89,7 @@
                 'where dataCollection.doi != null and',
                 "titleParameter.type.name = 'title' and",
                 "releaseDateParameter.type.name = 'releaseDate' and",
-                '(user1.name = :user or user2.name = :user) and ',
+                '(user1.name = :user or user2.name = :user or dataCollection.createId = :user) and ',
 
                 function(){
                     var out = [];
