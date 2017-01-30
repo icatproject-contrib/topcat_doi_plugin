@@ -8,9 +8,13 @@
 				<h1>{{doiLandingPageController.title}}</h1>
 				<p>{{doiLandingPageController.description}}</p>
 				<p>
-					<button ng-if="doiLandingPageController.isReleased" class="btn btn-primary btn-lg" ng-click="doiLandingPageController.download()">Download</button>
+					<button ng-if="doiLandingPageController.isReleased && doiLandingPageController.isValidSession" class="btn btn-primary btn-lg" ng-click="doiLandingPageController.download()">Download</button>
 
 					<span ng-if="!doiLandingPageController.isReleased" uib-tooltip="Data has not been released yet">
+						<button class="btn btn-primary btn-lg disabled">Download</button>
+					</span>
+
+					<span ng-if="doiLandingPageController.isReleased && !doiLandingPageController.isValidSession" uib-tooltip="You must be signed in to access this data">
 						<button class="btn btn-primary btn-lg disabled">Download</button>
 					</span>
 

@@ -82,6 +82,7 @@ import org.icatproject.DataCollectionDataset;
 import org.icatproject.User;
 import org.icatproject.Login.Credentials;
 import org.icatproject.Login.Credentials.Entry;
+import org.icatproject.IcatException_Exception;
 
 import org.icatproject.ids.client.DataSelection;
 import org.icatproject.ids.client.IdsClient;
@@ -187,13 +188,14 @@ public class RestApi {
     @Path("/metadata/{dataCollectionId}")
     @Produces({MediaType.APPLICATION_JSON})
     public Response getMetaData(
-        @PathParam("dataCollectionId") Long dataCollectionId)  throws Exception {
+        @PathParam("dataCollectionId") Long dataCollectionId,
+        @QueryParam("sessionId") String sessionId)  throws Exception {
 
         try {
             Properties properties = Properties.getInstance();
-            String readerIcatUrl = properties.getProperty("readerIcatUrl");
+            String icatUrl = properties.getProperty("icatUrl");
             String readerSessionId = readerSessionId();
-            ICAT icat = createIcat(readerIcatUrl);
+            ICAT icat = createIcat(icatUrl);
             DataCollection dataCollection = (DataCollection) icat.get(readerSessionId, "DataCollection", dataCollectionId);
             DataCiteClient dataCiteClient = new DataCiteClient();
             Document document = dataCiteClient.getDoiMetadata(dataCollection.getDoi());
@@ -210,6 +212,12 @@ public class RestApi {
             jsonObjectBuilder.add("releaseDate",  releaseDate);
             Date now = new Date();
             jsonObjectBuilder.add("isReleased",  now.after((new SimpleDateFormat("yyyy-MM-dd")).parse(releaseDate)));
+
+            if(properties.getProperty("mustHaveValidSession", "false").equals("true")){
+                jsonObjectBuilder.add("isValidSession",  isValidSession(icatUrl, sessionId));
+            } else {
+                jsonObjectBuilder.add("isValidSession",  true);
+            }
 
 
             jsonObjectBuilder.add("publisher",  xPath.compile("resource/publisher").evaluate(document));
@@ -261,8 +269,8 @@ public class RestApi {
         try {
             DataSelection dataSelection = dataCollectionToDataSelection(getDataCollection(dataCollectionId));
             Properties properties = Properties.getInstance();
-            URL readerIdsUrl = new URL(properties.getProperty("readerIdsUrl"));
-            IdsClient idsClient = new IdsClient(readerIdsUrl);
+            URL idsUrl = new URL(properties.getProperty("idsUrl"));
+            IdsClient idsClient = new IdsClient(idsUrl);
             Status status = null;
             String readerSessionId = readerSessionId();
 
@@ -290,7 +298,8 @@ public class RestApi {
     public Response prepareData(
         @PathParam("dataCollectionId") Long dataCollectionId,
         @FormParam("fileName") String fileName,
-        @FormParam("email") String email) throws Exception {
+        @FormParam("email") String email,
+        @FormParam("sessionId") String sessionId) throws Exception {
 
         try {
             DataCollection dataCollection = getDataCollection(dataCollectionId);
@@ -301,10 +310,14 @@ public class RestApi {
                 }
             }
 
-            DataSelection dataSelection = dataCollectionToDataSelection(dataCollection);
             Properties properties = Properties.getInstance();
-            URL readerIdsUrl = new URL(properties.getProperty("readerIdsUrl"));
-            IdsClient idsClient = new IdsClient(readerIdsUrl);
+            if(properties.getProperty("mustHaveValidSession", "false").equals("true") && !isValidSession(properties.getProperty("icatUrl", ""), sessionId)){
+                return Response.status(401).entity(Json.createObjectBuilder().add("message", "you need to be signed in to access this data").build().toString()).build();
+            }
+
+            DataSelection dataSelection = dataCollectionToDataSelection(dataCollection);
+            URL idsUrl = new URL(properties.getProperty("idsUrl"));
+            IdsClient idsClient = new IdsClient(idsUrl);
             String preparedId = idsClient.prepareData(readerSessionId(), dataSelection, Flag.ZIP);
 
             JsonObjectBuilder jsonObjectBuilder = Json.createObjectBuilder();
@@ -312,14 +325,14 @@ public class RestApi {
 
             if(email != null && email.length() > 0){
                 DoiDownload doiDownload = new DoiDownload();
-                doiDownload.setTransportUrl(readerIdsUrl.toString());
+                doiDownload.setTransportUrl(idsUrl.toString());
                 doiDownload.setPreparedId(preparedId);
                 doiDownload.setFileName(fileName);
                 doiDownload.setEmail(email);
                 em.persist(doiDownload);
                 em.flush();
             } else {
-                String downloadUrl = readerIdsUrl.toString();
+                String downloadUrl = idsUrl.toString();
                 downloadUrl += "/ids/getData?preparedId=" + preparedId;
                 downloadUrl += "&outname=" + fileName;
                 jsonObjectBuilder.add("downloadUrl", downloadUrl);
@@ -355,9 +368,9 @@ public class RestApi {
 
     private DataCollection getDataCollection(Long id) throws Exception {
         Properties properties = Properties.getInstance();
-        String readerIcatUrl = properties.getProperty("readerIcatUrl");
+        String icatUrl = properties.getProperty("icatUrl");
         String readerSessionId = readerSessionId();
-        ICAT icat = createIcat(readerIcatUrl);
+        ICAT icat = createIcat(icatUrl);
         return (DataCollection) icat.get(readerSessionId, "DataCollection dataCollection include dataCollection.dataCollectionDatafiles.datafile.dataset.investigation.facility, dataCollection.dataCollectionDatasets.dataset.investigation.facility, dataCollection.parameters.type", id);
     }
 
@@ -498,14 +511,23 @@ public class RestApi {
         return icatService.getICATPort();
     }
 
+    private boolean isValidSession(String icatUrl, String sessionId) throws Exception {
+        try {
+            createIcat(icatUrl).getUserName(sessionId);
+            return true;
+        } catch(IcatException_Exception e){
+            return false;
+        }
+    }
+
     private String readerSessionId() throws Exception {
         Properties properties = Properties.getInstance();
-        String readerIcatUrl = properties.getProperty("readerIcatUrl");
+        String icatUrl = properties.getProperty("icatUrl");
         String readerAuthenticationPlugin = properties.getProperty("readerAuthenticationPlugin");
         String readerUsername = properties.getProperty("readerUsername");
         String readerPassword = properties.getProperty("readerPassword");
 
-        ICAT icat = createIcat(readerIcatUrl);
+        ICAT icat = createIcat(icatUrl);
 
         Credentials credentials = new Credentials();
         List<Entry> entries = credentials.getEntry();

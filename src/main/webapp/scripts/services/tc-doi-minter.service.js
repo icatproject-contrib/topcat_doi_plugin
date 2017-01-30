@@ -65,7 +65,7 @@
 
             this.metadata = helpers.overload({
                 'number, object': function(id, options){
-                    return this.get('metadata/' + id, {}, options);
+                    return this.get('metadata/' + id, {sessionId: facility.icat().session().sessionId}, options);
                 },
                 'promise, number': function(timeout, id){
                     return this.metadata(id, {timeout: timeout});
@@ -101,7 +101,11 @@
 
             this.prepareData = helpers.overload({
                 'number, string, string, object': function(id, fileName, email, options){
-                    return this.post('prepareData/' + id, {fileName: fileName, email: email}, options);
+                    return this.post('prepareData/' + id, {
+                        fileName: fileName,
+                        email: email,
+                        sessionId: facility.icat().session().sessionId
+                    }, options);
                 },
                 'promise, number, string, string': function(timeout, id,  email){
                     return this.prepareData(id, fileName, email, {timeout: timeout});

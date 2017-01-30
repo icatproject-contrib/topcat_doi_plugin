@@ -23,6 +23,16 @@
     	this.state = 'basic_details';
         this.title = "";
     	this.isReleaseDate = false;
+        this.isReleaseDateOptions = [
+            {
+                label: "Now - I want to release the data straight away",
+                value: false
+            },
+            {
+                label: "In the future - I want to delay the data release",
+                value: true
+            }
+        ];
     	this.releaseDate = null;
     	this.isReleaseDateOpen = false;
     	this.licence = null;

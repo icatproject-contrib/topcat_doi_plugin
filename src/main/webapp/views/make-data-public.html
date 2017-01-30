@@ -32,13 +32,11 @@
             </div>
         </div>
         <div ng-if="makeDataPublicController.state == 'basic_details'" class="form-group">
-            <label>Do you want to specify a release date?</label>
-            <div ng-if="makeDataPublicController.state == 'basic_details'" class="checkbox">
-                <label>
-                    <input type="checkbox" ng-model="makeDataPublicController.isReleaseDate">
-                    Yes I want to specify a release date
-                </label>
-            </div>
+            <label>When do you want to release the data?</label>
+            <select
+                class="form-control"
+                ng-options="isReleaseDateOption.value as isReleaseDateOption.label for isReleaseDateOption in makeDataPublicController.isReleaseDateOptions"
+                ng-model="makeDataPublicController.isReleaseDate"></select>
         </div>
         <div ng-if="makeDataPublicController.state == 'basic_details' && makeDataPublicController.isReleaseDate" class="form-group">
             <label>Release date</label>
