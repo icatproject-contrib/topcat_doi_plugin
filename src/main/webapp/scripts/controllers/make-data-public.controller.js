@@ -47,7 +47,7 @@
         this.description = "";
 
         this.creativeCommonsSharable = "yes";
-        this.creativeCommonsCommerial = "yes";
+        this.creativeCommonsCommercial = "yes";
 
         var datasetIds = [];
         var datafileIds = [];

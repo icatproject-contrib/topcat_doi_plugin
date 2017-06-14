@@ -70,8 +70,7 @@
         		ng-options="licence.name for licence in makeDataPublicController.licences">
             </select>
         </div>
-        <div ng-if="makeDataPublicController.state == 'legal' && makeDataPublicController.licence" class="form-group">
-        	<label>Terms and Conditions</label>
+        <div ng-if="makeDataPublicController.state == 'legal' && makeDataPublicController.licence && makeDataPublicController.licence.name != 'Creative Commons'" class="form-group">Terms and Conditions</label>
             <div class="terms-and-conditions">{{makeDataPublicController.licence.terms}}</div>
         	<div class="checkbox">
     		    <label>
@@ -79,6 +78,74 @@
     		    	I agree to the above terms and conditions
     		    </label>
     		</div>
+        </div>
+        <div ng-if="makeDataPublicController.state == 'legal' && makeDataPublicController.licence && makeDataPublicController.licence.name == 'Creative Commons'" class="form-group">
+            <label>Allow adaptations of your work to be shared?</label>
+            <select class="form-control" ng-model="makeDataPublicController.creativeCommonsSharable">
+                <option value="yes">Yes</option>
+                <option value="no">No</option>
+                <option value="sa">Yes, as long as others share alike</option>
+            </select>
+        </div>
+        <div ng-if="makeDataPublicController.state == 'legal' && makeDataPublicController.licence && makeDataPublicController.licence.name == 'Creative Commons'" class="form-group">
+            <label>Allow commercial uses of your work?</label>
+            <select class="form-control" ng-model="makeDataPublicController.creativeCommonsCommercial">
+                <option value="yes">Yes</option>
+                <option value="no">No</option>
+            </select>
+        </div>
+        <div ng-if="makeDataPublicController.state == 'legal' && makeDataPublicController.licence && makeDataPublicController.licence.name == 'Creative Commons'" class="form-group">
+            <label>Selected licence</label>
+
+            <div style="text-align: center; padding: 14px">
+                <h4>
+                    <a 
+                        href="http://creativecommons.org/licenses/by/4.0/"
+                        ng-if="makeDataPublicController.creativeCommonsSharable == 'yes' && makeDataPublicController.creativeCommonsCommercial == 'yes'"
+                        target="_blank">
+                        Attribution 4.0 International
+                    </a>
+                    <a 
+                        href="http://creativecommons.org/licenses/by-nd/4.0/"
+                        ng-if="makeDataPublicController.creativeCommonsSharable == 'no' && makeDataPublicController.creativeCommonsCommercial == 'yes'"
+                        target="_blank">
+                        Attribution-NoDerivatives 4.0 International
+                    </a>
+                    <a 
+                        href="http://creativecommons.org/licenses/by-sa/4.0/"
+                        ng-if="makeDataPublicController.creativeCommonsSharable == 'sa' && makeDataPublicController.creativeCommonsCommercial == 'yes'"
+                        target="_blank">
+                        Attribution-ShareAlike 4.0 International
+                    </a>
+
+                    <a 
+                        href="http://creativecommons.org/licenses/by-nc/4.0/"
+                        ng-if="makeDataPublicController.creativeCommonsSharable == 'yes' && makeDataPublicController.creativeCommonsCommercial == 'no'"
+                        target="_blank">
+                        Attribution-NonCommercial 4.0 International
+                    </a>
+                    <a 
+                        href="http://creativecommons.org/licenses/by-nc-nd/4.0/"
+                        ng-if="makeDataPublicController.creativeCommonsSharable == 'no' && makeDataPublicController.creativeCommonsCommercial == 'no'"
+                        target="_blank">
+                        Attribution-NonCommercial-NoDerivatives 4.0 International
+                    </a>
+                    <a 
+                        href="http://creativecommons.org/licenses/by-nc-sa/4.0/"
+                        ng-if="makeDataPublicController.creativeCommonsSharable == 'sa' && makeDataPublicController.creativeCommonsCommercial == 'no'"
+                        target="_blank">
+                        Attribution-NonCommercial-ShareAlike 4.0 International
+                    </a>
+                </h4>
+                <div style="text-align: center; margin-top: 14px">
+                    <img ng-src="/topcat_doi_plugin/images/creative_commons/cc.png">
+                    <img ng-src="/topcat_doi_plugin/images/creative_commons/by.png">
+                    <img ng-if="makeDataPublicController.creativeCommonsCommercial == 'no'" ng-src="/topcat_doi_plugin/images/creative_commons/nc.png">
+                    <img ng-if="makeDataPublicController.creativeCommonsSharable == 'no'" ng-src="/topcat_doi_plugin/images/creative_commons/nd.png">
+                    <img ng-if="makeDataPublicController.creativeCommonsSharable == 'sa'" ng-src="/topcat_doi_plugin/images/creative_commons/sa.png">
+                </div>
+            </div>
+
         </div>
         <div ng-if="makeDataPublicController.state == 'confirm'" class="form-group">
             <label>Title</label>
