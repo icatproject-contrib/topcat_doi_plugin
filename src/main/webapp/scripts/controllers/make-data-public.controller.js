@@ -46,6 +46,9 @@
         this.newCreator = "";
         this.description = "";
 
+        this.creativeCommonsSharable = "yes";
+        this.creativeCommonsCommerial = "yes";
+
         var datasetIds = [];
         var datafileIds = [];
         user.cart().then(function(cart){

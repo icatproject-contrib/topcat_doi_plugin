@@ -21,8 +21,15 @@ registerTopcatPlugin(function(pluginUrl){
 					_type: 'array',
 					_item: {
 						name: {_type: 'string'},
-						url: {_type: 'string'},
-						terms: {_type: "string"}
+						url: {
+							_type: 'string',
+							_mandatory: function(o){ return o.name != 'Creative Commons';  }
+						},
+						terms: {
+							_type: "string",
+							_mandatory: function(o){ return o.name != 'Creative Commons';  }
+
+						}
 					}
 				}
 			}
