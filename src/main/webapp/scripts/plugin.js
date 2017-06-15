@@ -35,7 +35,7 @@ registerTopcatPlugin(function(pluginUrl){
 			}
 		},
 
-		setup: function($uibModal, tc, tcDoiMinter){
+		setup: function($uibModal, $rootScope, tc, tcDoiMinter){
 
 			tc.ui().registerCartButton('make-data-public', {insertBefore: 'cancel'}, function(){
 				$uibModal.open({
@@ -44,6 +44,14 @@ registerTopcatPlugin(function(pluginUrl){
                     size : 'md'
                 })
 			});
+
+			$rootScope.$on('upload:complete', function(e, datafileIds){
+	            $uibModal.open({
+	                templateUrl : pluginUrl + 'views/make-data-public.html',
+	                controller: 'MakeDataPublicController as makeDataPublicController',
+	                size : 'md'
+	            })
+	        });
 
 			tc.ui().registerMainTab('my-dois', pluginUrl + 'views/my-dois.html', {
 				insertAfter: 'my-data',
