@@ -70,18 +70,12 @@
         		ng-options="licence.name for licence in makeDataPublicController.licences">
             </select>
         </div>
-        <div ng-if="makeDataPublicController.state == 'legal' && makeDataPublicController.licence && makeDataPublicController.licence.name != 'Creative Commons'" class="form-group">Terms and Conditions</label>
-            <div class="terms-and-conditions">{{makeDataPublicController.licence.terms}}</div>
-        	<div class="checkbox">
-    		    <label>
-    		    	<input type="checkbox" ng-model="makeDataPublicController.hasAcceptedLegal">
-    		    	I agree to the above terms and conditions
-    		    </label>
-    		</div>
-        </div>
         <div ng-if="makeDataPublicController.state == 'legal' && makeDataPublicController.licence && makeDataPublicController.licence.name == 'Creative Commons'" class="form-group">
             <label>Allow adaptations of your work to be shared?</label>
-            <select class="form-control" ng-model="makeDataPublicController.creativeCommonsSharable">
+            <select
+                class="form-control"
+                ng-model="makeDataPublicController.creativeCommonsSharable"
+                ng-change="makeDataPublicController.hasAcceptedLegal = false">
                 <option value="yes">Yes</option>
                 <option value="no">No</option>
                 <option value="sa">Yes, as long as others share alike</option>
@@ -89,14 +83,16 @@
         </div>
         <div ng-if="makeDataPublicController.state == 'legal' && makeDataPublicController.licence && makeDataPublicController.licence.name == 'Creative Commons'" class="form-group">
             <label>Allow commercial uses of your work?</label>
-            <select class="form-control" ng-model="makeDataPublicController.creativeCommonsCommercial">
+            <select
+                class="form-control"
+                ng-model="makeDataPublicController.creativeCommonsCommercial"
+                ng-change="makeDataPublicController.hasAcceptedLegal = false">
                 <option value="yes">Yes</option>
                 <option value="no">No</option>
             </select>
         </div>
         <div ng-if="makeDataPublicController.state == 'legal' && makeDataPublicController.licence && makeDataPublicController.licence.name == 'Creative Commons'" class="form-group">
-            <label>Selected licence</label>
-
+            <label>Terms and Conditions</label>
             <div style="text-align: center; padding: 14px">
                 <h4>
                     <a 
@@ -145,7 +141,23 @@
                     <img ng-if="makeDataPublicController.creativeCommonsSharable == 'sa'" ng-src="/topcat_doi_plugin/images/creative_commons/sa.png">
                 </div>
             </div>
+            <div class="checkbox">
+                <label>
+                    <input type="checkbox" ng-model="makeDataPublicController.hasAcceptedLegal">
+                    I agree to the above terms and conditions
+                </label>
+            </div>
 
+        </div>
+        <div ng-if="makeDataPublicController.state == 'legal' && makeDataPublicController.licence && makeDataPublicController.licence.name != 'Creative Commons'" class="form-group">
+            <label>Terms and Conditions</label>
+            <div class="terms-and-conditions">{{makeDataPublicController.licence.terms}}</div>
+            <div class="checkbox">
+                <label>
+                    <input type="checkbox" ng-model="makeDataPublicController.hasAcceptedLegal">
+                    I agree to the above terms and conditions
+                </label>
+            </div>
         </div>
         <div ng-if="makeDataPublicController.state == 'confirm'" class="form-group">
             <label>Title</label>
@@ -167,7 +179,47 @@
         </div>
         <div ng-if="makeDataPublicController.state == 'confirm'" class="form-group">
             <label>Licence</label>
-            <p>{{makeDataPublicController.licence.name}}</p>
+            <p ng-if="makeDataPublicController.licence.name != 'Creative Commons'">{{makeDataPublicController.licence.name}}</p>
+            <p ng-if="makeDataPublicController.licence.name == 'Creative Commons'">
+                Creative Commons - 
+                <a 
+                    href="http://creativecommons.org/licenses/by/4.0/"
+                    ng-if="makeDataPublicController.creativeCommonsSharable == 'yes' && makeDataPublicController.creativeCommonsCommercial == 'yes'"
+                    target="_blank">
+                    Attribution 4.0 International
+                </a>
+                <a 
+                    href="http://creativecommons.org/licenses/by-nd/4.0/"
+                    ng-if="makeDataPublicController.creativeCommonsSharable == 'no' && makeDataPublicController.creativeCommonsCommercial == 'yes'"
+                    target="_blank">
+                    Attribution-NoDerivatives 4.0 International
+                </a>
+                <a 
+                    href="http://creativecommons.org/licenses/by-sa/4.0/"
+                    ng-if="makeDataPublicController.creativeCommonsSharable == 'sa' && makeDataPublicController.creativeCommonsCommercial == 'yes'"
+                    target="_blank">
+                    Attribution-ShareAlike 4.0 International
+                </a>
+
+                <a 
+                    href="http://creativecommons.org/licenses/by-nc/4.0/"
+                    ng-if="makeDataPublicController.creativeCommonsSharable == 'yes' && makeDataPublicController.creativeCommonsCommercial == 'no'"
+                    target="_blank">
+                    Attribution-NonCommercial 4.0 International
+                </a>
+                <a 
+                    href="http://creativecommons.org/licenses/by-nc-nd/4.0/"
+                    ng-if="makeDataPublicController.creativeCommonsSharable == 'no' && makeDataPublicController.creativeCommonsCommercial == 'no'"
+                    target="_blank">
+                    Attribution-NonCommercial-NoDerivatives 4.0 International
+                </a>
+                <a 
+                    href="http://creativecommons.org/licenses/by-nc-sa/4.0/"
+                    ng-if="makeDataPublicController.creativeCommonsSharable == 'sa' && makeDataPublicController.creativeCommonsCommercial == 'no'"
+                    target="_blank">
+                    Attribution-NonCommercial-ShareAlike 4.0 International
+                </a>
+            </p>
         </div>
         <div ng-if="makeDataPublicController.state == 'confirm'" class="form-group">
             <label>Are you really sure you want to make this data public?</label>
