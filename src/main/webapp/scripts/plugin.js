@@ -31,11 +31,12 @@ registerTopcatPlugin(function(pluginUrl){
 
 						}
 					}
-				}
+				},
+				afterUploadMintDoi: {_type: 'boolean', _mandatory: false},
 			}
 		},
 
-		setup: function($uibModal, $rootScope, tc, tcDoiMinter){
+		setup: function($uibModal, $rootScope, $state, tc, tcDoiMinter){
 
 			tc.ui().registerCartButton('make-data-public', {insertBefore: 'cancel'}, function(){
 				$uibModal.open({
@@ -47,20 +48,22 @@ registerTopcatPlugin(function(pluginUrl){
 	                		return [];
 	                	}
 	                }
-                })
+                });
 			});
 
 			$rootScope.$on('upload:complete', function(e, datafileIds){
-	            $uibModal.open({
-	                templateUrl : pluginUrl + 'views/make-data-public.html',
-	                controller: 'MakeDataPublicController as makeDataPublicController',
-	                size : 'md',
-	                resolve: {
-	                	datafileIds: function(){
-	                		return datafileIds;
-	                	}
-	                }
-	            })
+				if(tc.doiMinter($state.params.facilityName).config().afterUploadMintDoi){
+		            $uibModal.open({
+		                templateUrl : pluginUrl + 'views/make-data-public.html',
+		                controller: 'MakeDataPublicController as makeDataPublicController',
+		                size : 'md',
+		                resolve: {
+		                	datafileIds: function(){
+		                		return datafileIds;
+		                	}
+		                }
+		            });
+		       	}
 	        });
 
 			tc.ui().registerMainTab('my-dois', pluginUrl + 'views/my-dois.html', {

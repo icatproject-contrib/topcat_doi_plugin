@@ -174,12 +174,16 @@ public class RestApi {
             Properties properties = Properties.getInstance();
             String landingPageUrl = properties.getProperty("topcatUrl") + "/topcat_doi_plugin/api/redirectToLandingPage/";
             
-            createDoi(doi, title, description, creators, releaseDate, publisher, publicationYear, resourceTypeGeneral, resourceType, licenceName, licenceUrl, landingPageUrl);
+            try {
+                createDoi(doi, title, description, creators, releaseDate, publisher, publicationYear, resourceTypeGeneral, resourceType, licenceName, licenceUrl, landingPageUrl);
+            } catch(DataCiteClientException e){
+                logger.error("DataCiteClientException: " + e.getMessage());
+                createIcat(icatUrl).delete(sessionId, dataCollection);
+                throw e;
+            }
 
             return Response.ok().entity(Json.createObjectBuilder().add("id", 3242).add("doi", "sdfs").build().toString()).build();
-        } catch(DataCiteClientException e){
-            return e.toResponse();
-        } catch(Exception e){
+        }  catch(Exception e){
             return Response.status(400).entity(Json.createObjectBuilder().add("message", e.toString()).build().toString()).build();
         }
     }
