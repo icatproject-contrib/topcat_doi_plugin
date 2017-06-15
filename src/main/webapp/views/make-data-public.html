@@ -96,7 +96,7 @@
             <div style="text-align: center; padding: 14px">
                 <h4>
                     <a 
-                        href="{makeDataPublicController.creativeCommonsLicenceUrl}}"
+                        href="{{makeDataPublicController.creativeCommonsLicenceUrl}}"
                         target="_blank">
                         {{makeDataPublicController.creativeCommonsLicenceName}}
                     </a>
@@ -150,11 +150,10 @@
             <label>Licence</label>
             <p ng-if="makeDataPublicController.licence.name != 'Creative Commons'">{{makeDataPublicController.licence.name}}</p>
             <p ng-if="makeDataPublicController.licence.name == 'Creative Commons'">
-                Creative Commons - 
                 <a 
-                    href="{makeDataPublicController.creativeCommonsLicenceUrl}}"
+                    href="{{makeDataPublicController.creativeCommonsLicenceUrl}}"
                     target="_blank">
-                    {{makeDataPublicController.creativeCommonsLicenceName}}
+                    Creative Commons - {{makeDataPublicController.creativeCommonsLicenceName}}
                 </a>
             </p>
         </div>
