@@ -65,7 +65,7 @@
         	<label>Licence</label>
         	<select
         		class="form-control"
-        		ng-change="makeDataPublicController.hasAcceptedLegal = false"
+        		ng-change="makeDataPublicController.updateCreativeCommonsLicence()"
         		ng-model="makeDataPublicController.licence"
         		ng-options="licence.name for licence in makeDataPublicController.licences">
             </select>
@@ -74,8 +74,8 @@
             <label>Allow adaptations of your work to be shared?</label>
             <select
                 class="form-control"
-                ng-model="makeDataPublicController.creativeCommonsSharable"
-                ng-change="makeDataPublicController.hasAcceptedLegal = false">
+                ng-model="makeDataPublicController.creativeCommonsAllowDerivatives"
+                ng-change="makeDataPublicController.updateCreativeCommonsLicence()">
                 <option value="yes">Yes</option>
                 <option value="no">No</option>
                 <option value="sa">Yes, as long as others share alike</option>
@@ -86,7 +86,7 @@
             <select
                 class="form-control"
                 ng-model="makeDataPublicController.creativeCommonsCommercial"
-                ng-change="makeDataPublicController.hasAcceptedLegal = false">
+                ng-change="makeDataPublicController.updateCreativeCommonsLicence()">
                 <option value="yes">Yes</option>
                 <option value="no">No</option>
             </select>
@@ -96,49 +96,18 @@
             <div style="text-align: center; padding: 14px">
                 <h4>
                     <a 
-                        href="http://creativecommons.org/licenses/by/4.0/"
-                        ng-if="makeDataPublicController.creativeCommonsSharable == 'yes' && makeDataPublicController.creativeCommonsCommercial == 'yes'"
+                        href="{makeDataPublicController.creativeCommonsLicenceUrl}}"
                         target="_blank">
-                        Attribution 4.0 International
-                    </a>
-                    <a 
-                        href="http://creativecommons.org/licenses/by-nd/4.0/"
-                        ng-if="makeDataPublicController.creativeCommonsSharable == 'no' && makeDataPublicController.creativeCommonsCommercial == 'yes'"
-                        target="_blank">
-                        Attribution-NoDerivatives 4.0 International
-                    </a>
-                    <a 
-                        href="http://creativecommons.org/licenses/by-sa/4.0/"
-                        ng-if="makeDataPublicController.creativeCommonsSharable == 'sa' && makeDataPublicController.creativeCommonsCommercial == 'yes'"
-                        target="_blank">
-                        Attribution-ShareAlike 4.0 International
+                        {{makeDataPublicController.creativeCommonsLicenceName}}
                     </a>
 
-                    <a 
-                        href="http://creativecommons.org/licenses/by-nc/4.0/"
-                        ng-if="makeDataPublicController.creativeCommonsSharable == 'yes' && makeDataPublicController.creativeCommonsCommercial == 'no'"
-                        target="_blank">
-                        Attribution-NonCommercial 4.0 International
-                    </a>
-                    <a 
-                        href="http://creativecommons.org/licenses/by-nc-nd/4.0/"
-                        ng-if="makeDataPublicController.creativeCommonsSharable == 'no' && makeDataPublicController.creativeCommonsCommercial == 'no'"
-                        target="_blank">
-                        Attribution-NonCommercial-NoDerivatives 4.0 International
-                    </a>
-                    <a 
-                        href="http://creativecommons.org/licenses/by-nc-sa/4.0/"
-                        ng-if="makeDataPublicController.creativeCommonsSharable == 'sa' && makeDataPublicController.creativeCommonsCommercial == 'no'"
-                        target="_blank">
-                        Attribution-NonCommercial-ShareAlike 4.0 International
-                    </a>
                 </h4>
                 <div style="text-align: center; margin-top: 14px">
                     <img ng-src="/topcat_doi_plugin/images/creative_commons/cc.png">
                     <img ng-src="/topcat_doi_plugin/images/creative_commons/by.png">
                     <img ng-if="makeDataPublicController.creativeCommonsCommercial == 'no'" ng-src="/topcat_doi_plugin/images/creative_commons/nc.png">
-                    <img ng-if="makeDataPublicController.creativeCommonsSharable == 'no'" ng-src="/topcat_doi_plugin/images/creative_commons/nd.png">
-                    <img ng-if="makeDataPublicController.creativeCommonsSharable == 'sa'" ng-src="/topcat_doi_plugin/images/creative_commons/sa.png">
+                    <img ng-if="makeDataPublicController.creativeCommonsAllowDerivatives == 'no'" ng-src="/topcat_doi_plugin/images/creative_commons/nd.png">
+                    <img ng-if="makeDataPublicController.creativeCommonsAllowDerivatives == 'sa'" ng-src="/topcat_doi_plugin/images/creative_commons/sa.png">
                 </div>
             </div>
             <div class="checkbox">
@@ -183,41 +152,9 @@
             <p ng-if="makeDataPublicController.licence.name == 'Creative Commons'">
                 Creative Commons - 
                 <a 
-                    href="http://creativecommons.org/licenses/by/4.0/"
-                    ng-if="makeDataPublicController.creativeCommonsSharable == 'yes' && makeDataPublicController.creativeCommonsCommercial == 'yes'"
+                    href="{makeDataPublicController.creativeCommonsLicenceUrl}}"
                     target="_blank">
-                    Attribution 4.0 International
-                </a>
-                <a 
-                    href="http://creativecommons.org/licenses/by-nd/4.0/"
-                    ng-if="makeDataPublicController.creativeCommonsSharable == 'no' && makeDataPublicController.creativeCommonsCommercial == 'yes'"
-                    target="_blank">
-                    Attribution-NoDerivatives 4.0 International
-                </a>
-                <a 
-                    href="http://creativecommons.org/licenses/by-sa/4.0/"
-                    ng-if="makeDataPublicController.creativeCommonsSharable == 'sa' && makeDataPublicController.creativeCommonsCommercial == 'yes'"
-                    target="_blank">
-                    Attribution-ShareAlike 4.0 International
-                </a>
-
-                <a 
-                    href="http://creativecommons.org/licenses/by-nc/4.0/"
-                    ng-if="makeDataPublicController.creativeCommonsSharable == 'yes' && makeDataPublicController.creativeCommonsCommercial == 'no'"
-                    target="_blank">
-                    Attribution-NonCommercial 4.0 International
-                </a>
-                <a 
-                    href="http://creativecommons.org/licenses/by-nc-nd/4.0/"
-                    ng-if="makeDataPublicController.creativeCommonsSharable == 'no' && makeDataPublicController.creativeCommonsCommercial == 'no'"
-                    target="_blank">
-                    Attribution-NonCommercial-NoDerivatives 4.0 International
-                </a>
-                <a 
-                    href="http://creativecommons.org/licenses/by-nc-sa/4.0/"
-                    ng-if="makeDataPublicController.creativeCommonsSharable == 'sa' && makeDataPublicController.creativeCommonsCommercial == 'no'"
-                    target="_blank">
-                    Attribution-NonCommercial-ShareAlike 4.0 International
+                    {{makeDataPublicController.creativeCommonsLicenceName}}
                 </a>
             </p>
         </div>

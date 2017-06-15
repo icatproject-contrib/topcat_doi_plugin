@@ -5,7 +5,7 @@
 
     var app = angular.module('topcat');
 
-    app.controller('MakeDataPublicController', function($uibModalInstance, $uibModalStack, $timeout, $q, tc, inform){
+    app.controller('MakeDataPublicController', function($uibModalInstance, $uibModalStack, $timeout, $q, tc, inform, datafileIds){
         
         if(tc.userFacilities().length > 1){
             alert("This feature can't be used with multiple facilities.");
@@ -45,18 +45,59 @@
         this.loaded = false;
         this.newCreator = "";
         this.description = "";
+        this.isFromCart = false;
 
-        this.creativeCommonsSharable = "yes";
+        this.creativeCommonsAllowDerivatives = "yes";
         this.creativeCommonsCommercial = "yes";
+        this.creativeCommonsLicenceName = "";
+        this.creativeCommonsLicenceUrl = "";
+
+        this.updateCreativeCommonsLicence = function(){
+            if(this.creativeCommonsCommercial == 'yes'){
+                if(this.creativeCommonsAllowDerivatives == 'yes'){
+                    this.creativeCommonsLicenceName = "Attribution 4.0 International";
+                    this.creativeCommonsLicenceUrl = "http://creativecommons.org/licenses/by/4.0/";
+                } else if(this.creativeCommonsAllowDerivatives == 'no'){
+                    this.creativeCommonsLicenceName = "Attribution-NoDerivatives 4.0 International";
+                    this.creativeCommonsLicenceUrl = "http://creativecommons.org/licenses/by-nd/4.0/";
+                } else {
+                    this.creativeCommonsLicenceName = "Attribution-ShareAlike 4.0 International";
+                    this.creativeCommonsLicenceUrl = "http://creativecommons.org/licenses/by-sa/4.0/";
+                }
+            } else {
+                if(this.creativeCommonsAllowDerivatives == 'yes'){
+                    this.creativeCommonsLicenceName = "Attribution-NonCommercial 4.0 International";
+                    this.creativeCommonsLicenceUrl = "http://creativecommons.org/licenses/by-nc/4.0/";
+                } else if(this.creativeCommonsAllowDerivatives == 'no'){
+                    this.creativeCommonsLicenceName = "Attribution-NonCommercial-NoDerivatives 4.0 International";
+                    this.creativeCommonsLicenceUrl = "http://creativecommons.org/licenses/by-nc-nd/4.0/";
+                } else {
+                    this.creativeCommonsLicenceName = "Attribution-NonCommercial-ShareAlike 4.0 International";
+                    this.creativeCommonsLicenceUrl = "http://creativecommons.org/licenses/by-nc-sa/4.0/";
+                }
+            }
+
+            this.hasAcceptedLegal = false;
+        }; 
+
+        this.updateCreativeCommonsLicence();
 
         var datasetIds = [];
-        var datafileIds = [];
-        user.cart().then(function(cart){
-            _.each(cart.cartItems,  function(cartItem){
-                if(cartItem.entityType == 'dataset') datasetIds.push(cartItem.entityId);
-                if(cartItem.entityType == 'datafile') datafileIds.push(cartItem.entityId);
-            });
+        if(datafileIds.length == 0){
+            this.isFromCart = true
 
+            user.cart().then(function(cart){
+                _.each(cart.cartItems,  function(cartItem){
+                    if(cartItem.entityType == 'dataset') datasetIds.push(cartItem.entityId);
+                    if(cartItem.entityType == 'datafile') datafileIds.push(cartItem.entityId);
+                });
+                populateMetadata();
+            });
+        } else {
+            populateMetadata();
+        }
+
+        function populateMetadata(){
             var promises = [];
             var investigations = [];
 
@@ -101,7 +142,7 @@
                 }
                 that.loaded = true;
             });
-        });
+        }
 
         this.moveCreatorUp = function(creator){
             var position = _.indexOf(this.creators, creator);
@@ -178,10 +219,23 @@
     	this.confirm = function(){
             icat.verifyPassword(this.password).then(function(isValid){
                 if(isValid){
-                    facility.doiMinter().makePublicDataCollection(that.title, that.description, that.creators, that.computedReleaseDate, that.licence.name, that.licence.url, datasetIds, datafileIds).then(function(){
-                        user.deleteAllCartItems().then(function(){
-                            window.location.reload();
-                        });
+                    var licenceName = that.licence.name;
+                    var licenceUrl = that.licence.url;
+                    if(licenceName = "Creative Commons"){
+                        licenceName += " - " + that.creativeCommonsLicenceName;
+                        licenceUrl = that.creativeCommonsLicenceUrl;
+                    }
+
+                    facility.doiMinter().makePublicDataCollection(that.title, that.description, that.creators, that.computedReleaseDate, licenceName, licenceUrl, datasetIds, datafileIds).then(function(){
+                        if(that.isFromCart){
+                            user.deleteAllCartItems().then(function(){
+                                tc.refresh();
+                                $uibModalInstance.dismiss('cancel');
+                            });
+                        } else {
+                            tc.refresh();
+                            $uibModalInstance.dismiss('cancel');
+                        }
                     }, function(response){
                         inform.add(response.message, {
                             'ttl': 3000,

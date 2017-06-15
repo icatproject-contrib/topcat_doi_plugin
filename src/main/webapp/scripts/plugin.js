@@ -41,7 +41,12 @@ registerTopcatPlugin(function(pluginUrl){
 				$uibModal.open({
                     templateUrl : pluginUrl + 'views/make-data-public.html',
                     controller: 'MakeDataPublicController as makeDataPublicController',
-                    size : 'md'
+                    size : 'md',
+	                resolve: {
+	                	datafileIds: function(){
+	                		return [];
+	                	}
+	                }
                 })
 			});
 
@@ -49,7 +54,12 @@ registerTopcatPlugin(function(pluginUrl){
 	            $uibModal.open({
 	                templateUrl : pluginUrl + 'views/make-data-public.html',
 	                controller: 'MakeDataPublicController as makeDataPublicController',
-	                size : 'md'
+	                size : 'md',
+	                resolve: {
+	                	datafileIds: function(){
+	                		return datafileIds;
+	                	}
+	                }
 	            })
 	        });
 
