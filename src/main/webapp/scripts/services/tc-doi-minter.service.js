@@ -29,7 +29,7 @@
                             title: title,
                             description: description,
                             creators: creators,
-                            releaseDate: releaseDate.toISOString().replace(/^(\d\d\d\d-\d\d+-\d\d+)T(\d\d:\d\d:\d\d).*$/, '$1 $2'),
+                            releaseDate: releaseDate.toISOString().replace(/^(\d\d\d\d-\d\d+-\d\d+)T\d\d:\d\d:\d\d.*$/, '$1 00:00:00'),
                             licenceName: licenceName,
                             licenceUrl: licenceUrl,
                             datasetIds: datasetIds,

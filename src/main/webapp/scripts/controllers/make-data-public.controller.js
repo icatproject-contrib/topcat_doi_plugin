@@ -22,6 +22,7 @@
 
     	this.state = 'basic_details';
         this.title = "";
+        this.description = "";
     	this.isReleaseDate = false;
         this.isReleaseDateOptions = [
             {
@@ -84,7 +85,7 @@
 
         var datasetIds = [];
         if(datafileIds.length == 0){
-            this.isFromCart = true
+            this.isFromCart = true;
 
             user.cart().then(function(cart){
                 _.each(cart.cartItems,  function(cartItem){
@@ -189,7 +190,7 @@
     	};
 
     	this.isNextDisabled = function(){
-    		if(this.state == 'basic_details' && (!this.isReleaseDate || this.releaseDate != null) && this.title != '' && this.description != '' && this.creators.length > 0){
+    		if(this.state == 'basic_details' && (!this.isReleaseDate || this.releaseDate) && this.title && this.description  && this.creators.length > 0){
     			return false;
     		}
 
@@ -230,11 +231,11 @@
                         if(that.isFromCart){
                             user.deleteAllCartItems().then(function(){
                                 tc.refresh();
-                                $uibModalInstance.dismiss('cancel');
+                                $uibModalStack.dismissAll();
                             });
                         } else {
                             tc.refresh();
-                            $uibModalInstance.dismiss('cancel');
+                            $uibModalStack.dismissAll();
                         }
                     }, function(response){
                         inform.add(response.message, {

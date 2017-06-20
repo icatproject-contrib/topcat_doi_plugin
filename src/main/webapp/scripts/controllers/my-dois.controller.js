@@ -21,6 +21,14 @@
         var gridApi;
         var sortColumns = [];
 
+        $scope.$on('global:refresh', function(){
+            page = 1;
+            getPage().then(function(results){
+                gridOptions.data = results;
+                updateScroll(results.length);
+            });
+        });
+
 
         var isScroll = true;
         this.isScroll = isScroll;
