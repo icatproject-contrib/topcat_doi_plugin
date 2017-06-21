@@ -1,0 +1,41 @@
+#!/usr/bin/env python
+from setup_utils import *
+import os
+import re
+
+# topcat
+
+def uninstall():
+    app = actions.getAppName("topcat_doi_plugin")
+    if app: actions.undeploy(app)
+
+actions, arg, props = getActions("topcat_doi_plugin-setup.properties", [])
+
+prop_name = "topcat_doi_plugin.properties"
+prop_list = []
+
+if arg in ["CONFIGURE", "INSTALL"]: 
+    actions.configure(prop_name, prop_list) 
+    actions.checkNoErrors()
+
+if arg == "INSTALL":
+    actions.installFile(prop_name)
+           
+    try:
+        uninstall()
+
+        files = []
+        
+        actions.deploy(files=files, deploymentorder=145)
+
+    except Exception, e:
+        abort(str(e))
+
+else:  # UNINSTALL
+    actions.removeFile(prop_name)
+
+    try:
+        uninstall();
+
+    except Exception, e:
+        abort(str(e))

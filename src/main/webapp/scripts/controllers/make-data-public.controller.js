@@ -41,7 +41,6 @@
     	this.dateFormat = 'yyyy-MM-dd';
     	this.licences = facility.doiMinter().config().licences;
         this.termsAndConditions = "line 1\n line 2\nline 3\nline 4\nline 5\nline 6\nline 7\nline 8\nline 9\n"
-        this.password = "";
         this.creators = [];
         this.loaded = false;
         this.newCreator = "";
@@ -83,12 +82,14 @@
 
         this.updateCreativeCommonsLicence();
 
+        var investigationIds = [];
         var datasetIds = [];
         if(datafileIds.length == 0){
             this.isFromCart = true;
 
             user.cart().then(function(cart){
                 _.each(cart.cartItems,  function(cartItem){
+                    if(cartItem.entityType == 'investigation') investigationIds.push(cartItem.entityId);
                     if(cartItem.entityType == 'dataset') datasetIds.push(cartItem.entityId);
                     if(cartItem.entityType == 'datafile') datafileIds.push(cartItem.entityId);
                 });
@@ -218,39 +219,30 @@
     	};
 
     	this.confirm = function(){
-            icat.verifyPassword(this.password).then(function(isValid){
-                if(isValid){
-                    var licenceName = that.licence.name;
-                    var licenceUrl = that.licence.url;
-                    if(licenceName = "Creative Commons"){
-                        licenceName += " - " + that.creativeCommonsLicenceName;
-                        licenceUrl = that.creativeCommonsLicenceUrl;
-                    }
+            var licenceName = that.licence.name;
+            var licenceUrl = that.licence.url;
+            if(licenceName = "Creative Commons"){
+                licenceName += " - " + that.creativeCommonsLicenceName;
+                licenceUrl = that.creativeCommonsLicenceUrl;
+            }
 
-                    facility.doiMinter().makePublicDataCollection(that.title, that.description, that.creators, that.computedReleaseDate, licenceName, licenceUrl, datasetIds, datafileIds).then(function(){
-                        if(that.isFromCart){
-                            user.deleteAllCartItems().then(function(){
-                                tc.refresh();
-                                $uibModalStack.dismissAll();
-                            });
-                        } else {
-                            tc.refresh();
-                            $uibModalStack.dismissAll();
-                        }
-                    }, function(response){
-                        inform.add(response.message, {
-                            'ttl': 3000,
-                            'type': 'danger'
-                        });
+            facility.doiMinter().makePublicDataCollection(that.title, that.description, that.creators, that.computedReleaseDate, licenceName, licenceUrl, investigationIds, datasetIds, datafileIds).then(function(){
+                if(that.isFromCart){
+                    user.deleteAllCartItems().then(function(){
+                        tc.refresh();
+                        $uibModalStack.dismissAll();
                     });
                 } else {
-                    that.password = "";
-                    inform.add("Password is invalid - please try again", {
-                        'ttl': 1500,
-                        'type': 'danger'
-                    });
+                    tc.refresh();
+                    $uibModalStack.dismissAll();
                 }
+            }, function(response){
+                inform.add(response.message, {
+                    'ttl': 3000,
+                    'type': 'danger'
+                });
             });
+       
     	};
 
     	this.cancel = function() {

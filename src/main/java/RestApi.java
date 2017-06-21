@@ -125,7 +125,6 @@ public class RestApi {
     public Response makePublicDataCollection(@FormParam("json") String json) {
 
         try {
-
             InputStream jsonInputStream = new ByteArrayInputStream(json.getBytes(StandardCharsets.UTF_8));
             JsonReader jsonReader = Json.createReader(jsonInputStream);
             JsonObject jsonObject = jsonReader.readObject();
@@ -147,6 +146,13 @@ public class RestApi {
             List<Long> datasetIds = new ArrayList<Long>();
             for(JsonValue datasetId : jsonObject.getJsonArray("datasetIds")){
                 datasetIds.add(((JsonNumber) datasetId).longValue());
+            }
+
+            ICAT icat = createIcat(icatUrl);
+            for(JsonValue investigationId : jsonObject.getJsonArray("investigationIds")){
+                for(Object datasetId : icat.search(sessionId, "select dataset.id from Dataset dataset, dataset.investigation as investigation where investigation.id = " + ((JsonNumber) investigationId).longValue())){
+                    datasetIds.add((Long) datasetId);
+                }
             }
 
             List<Long> datafileIds = new ArrayList<Long>();
