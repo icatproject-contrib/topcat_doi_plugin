@@ -173,7 +173,10 @@ public class RestApi {
             String licenceName = jsonObject.getString("licenceName");
             String licenceUrl = jsonObject.getString("licenceUrl");
 
-            DataCollection dataCollection = createDataCollection(icatUrl, sessionId, title, releaseDate, datasetIds, datafileIds);
+            User user = (User) createIcat(icatUrl).search(sessionId, "select user from User user where user.name = :user").get(0);
+            String mintedBy = user.getFullName();
+
+            DataCollection dataCollection = createDataCollection(icatUrl, sessionId, title, releaseDate, mintedBy, datasetIds, datafileIds);
             String doi = generateEntityDoi("DataCollection", dataCollection.getId());
             setEntityDoi(icatUrl, sessionId, "DataCollection", dataCollection.getId(), doi);
 
@@ -465,7 +468,7 @@ public class RestApi {
 
     }
 
-    private DataCollection createDataCollection(String icatUrl, String sessionId, String title, Date releaseDate,  List<Long> datasetIds, List<Long> datafileIds) throws Exception {
+    private DataCollection createDataCollection(String icatUrl, String sessionId, String title, Date releaseDate, String mintedBy,  List<Long> datasetIds, List<Long> datafileIds) throws Exception {
         ICAT icat = createIcat(icatUrl);
 
         DataCollection dataCollection = new DataCollection();
@@ -473,6 +476,7 @@ public class RestApi {
 
         ParameterType titleParameterType = getParameterType(icatUrl, sessionId, "title");
         ParameterType releaseDateParameterType = getParameterType(icatUrl, sessionId, "releaseDate");
+        ParameterType mintedByParameterType = getParameterType(icatUrl, sessionId, "mintedBy");
 
         DataCollectionParameter titleDataCollectionParmeter = new DataCollectionParameter();
         titleDataCollectionParmeter.setDataCollection(dataCollection);
@@ -485,6 +489,12 @@ public class RestApi {
         releaseDateDataCollectionParmeter.setType(releaseDateParameterType);
         releaseDateDataCollectionParmeter.setDateTimeValue(dateToXMLGregorianCalendar(releaseDate));
         icat.create(sessionId, releaseDateDataCollectionParmeter);
+
+        DataCollectionParameter mintedByDataCollectionParmeter = new DataCollectionParameter();
+        mintedByDataCollectionParmeter.setDataCollection(dataCollection);
+        mintedByDataCollectionParmeter.setType(mintedByParameterType);
+        mintedByDataCollectionParmeter.setStringValue(mintedBy);
+        icat.create(sessionId, mintedByDataCollectionParmeter);
 
         for(Long datasetId : datasetIds){
             Dataset dataset = (Dataset) icat.get(sessionId, "Dataset", datasetId);

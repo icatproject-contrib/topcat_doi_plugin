@@ -55,9 +55,11 @@
                     "orderByField": "releaseDateParameter.dateTimeValue"
                 },
                 {
-                    "field": "createId",
-                    "title": "Created By",
-                    "orderByField": "dataCollection.createId"
+                    "field": "dataCollectionParameter[entity.type.name == 'mintedBy'].stringValue",
+                    "title": "Minted By",
+                    "cellTemplate": "<div class='ui-grid-cell-contents'><a ui-sref=\"doi-landing-page({facilityName: grid.appScope.facilityName, entityId: row.entity.id})\">{{row.entity.find(&quot;dataCollectionParameter[entity.type.name == 'mintedBy'].stringValue&quot;)[0]}}</a></div>",
+                    "orderByField": "mintedByParameter.stringValue"
+                
                 },
                 {
                     "field": "createTime",
@@ -80,6 +82,7 @@
 
                 'left outer join dataCollection.parameters as titleParameter',
                 'left outer join dataCollection.parameters as releaseDateParameter',
+                'left outer join dataCollection.parameters as mintedByParameter',
 
                 'left outer join dataCollection.dataCollectionDatafiles dataCollectionDatafile',
                 'left outer join dataCollectionDatafile.datafile datafile',
@@ -97,6 +100,7 @@
                 'where dataCollection.doi != null and',
                 "titleParameter.type.name = 'title' and",
                 "releaseDateParameter.type.name = 'releaseDate' and",
+                "titleParameter.type.name = 'mintedBy' and",
                 '(user1.name = :user or user2.name = :user or dataCollection.createId = :user) and ',
 
                 function(){
@@ -133,10 +137,10 @@
                         }
                     }
 
-                    //created by
+                    //minted by
                     if(gridOptions.columnDefs[3].filter && gridOptions.columnDefs[3].filter.term){
                         out.push([
-                            "UPPER(dataCollection.createId) like concat('%', ?, '%') and", 
+                            "UPPER(mintedByParameter.stringValue) like concat('%', ?, '%') and", 
                             gridOptions.columnDefs[3].filter.term.toUpperCase()
                         ]);
                     }

@@ -23,3 +23,11 @@ This follows same standard Icat stack installation procedures. The only extra re
     	:facility => {:id => facility_id}
     }
 
+    {
+        :name => "mintedBy",
+        :valueType => "STRING",
+        :units => "mintedBy",
+        :applicableToDataCollection => true,
+        :facility => {:id => facility_id}
+    }
+
