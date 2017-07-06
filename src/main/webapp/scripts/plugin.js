@@ -33,6 +33,7 @@ registerTopcatPlugin(function(pluginUrl){
 					}
 				},
 				afterUploadMintDoi: {_type: 'boolean', _mandatory: false},
+				maxReleaseDays: {_type: 'number', _mandatory: false}
 			}
 		},
 

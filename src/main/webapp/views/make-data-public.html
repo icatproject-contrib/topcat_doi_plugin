@@ -45,6 +45,7 @@
                     type="text"
                     class="form-control input-sm"
                     uib-datepicker-popup="{{searchController.dateFormat}}"
+                    datepicker-options="makeDataPublicController.datepickerOptions"
                     ng-model="makeDataPublicController.releaseDate"
                     is-open="makeDataPublicController.isReleaseDateOpen"
                     ng-click="makeDataPublicController.isReleaseDateOpen = true"

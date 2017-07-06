@@ -39,8 +39,20 @@
     	this.licence = null;
     	this.hasAcceptedLegal = false;
     	this.dateFormat = 'yyyy-MM-dd';
+        var maxDate = null;
+        if(facility.doiMinter().config().maxReleaseDays){
+            maxDate = new Date;
+            maxDate.setTime(maxDate.getTime() +  (facility.doiMinter().config().maxReleaseDays * 24 * 60 * 60 * 1000))
+            maxDate.setHours(0);
+            maxDate.setMinutes(0);
+            maxDate.setSeconds(0);
+        }
+        this.datepickerOptions = {
+            minDate: new Date,
+            maxDate: maxDate
+        };
     	this.licences = facility.doiMinter().config().licences;
-        this.termsAndConditions = "line 1\n line 2\nline 3\nline 4\nline 5\nline 6\nline 7\nline 8\nline 9\n"
+        this.termsAndConditions = ""
         this.creators = [];
         this.loaded = false;
         this.newCreator = "";
