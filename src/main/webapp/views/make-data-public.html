@@ -116,7 +116,7 @@
             <div class="checkbox">
                 <label>
                     <input type="checkbox" ng-model="makeDataPublicController.hasAcceptedLegal">
-                    I agree to the above terms and conditions
+                    I agree to release the data under the above licence
                 </label>
             </div>
 
@@ -179,7 +179,6 @@
         <button
             type="submit"
         	ng-if="makeDataPublicController.state == 'confirm'"
-        	ng-disabled="makeDataPublicController.isConfirmDisabled()" 
         	class="btn btn-primary"
         	ng-click="makeDataPublicController.confirm()"
         	translate="CART.MAKE_DATA_PUBLIC.CONFIRM_BUTTON.TEXT">	

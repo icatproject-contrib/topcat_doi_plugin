@@ -201,7 +201,6 @@
     	this.previous = function(){
     		if(this.state == 'confirm'){
     			this.state = 'legal';
-    			this.password = '';
     		} else if(this.state == 'legal'){
     			this.state = 'basic_details';
     		}
@@ -229,10 +228,6 @@
 	    		this.state = 'confirm';
                 this.computedReleaseDate = this.isReleaseDate ? this.releaseDate : new Date();
 	    	}
-    	};
-
-    	this.isConfirmDisabled = function(){
-    		return this.password == '';
     	};
 
     	this.confirm = function(){
