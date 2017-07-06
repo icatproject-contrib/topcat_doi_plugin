@@ -77,6 +77,16 @@
             <label>Allow adaptations of your work to be shared?</label>
             <select
                 class="form-control"
+                ng-model="makeDataPublicController.creativeCommonsPublicDomain"
+                ng-change="makeDataPublicController.updateCreativeCommonsLicence()">
+                <option value="yes">Yes, I was want to release my work work without copyright</option>
+                <option value="no">No</option>
+            </select>
+        </div>
+        <div ng-if="makeDataPublicController.state == 'legal' && makeDataPublicController.licence && makeDataPublicController.licence.name == 'Creative Commons'" class="form-group">
+            <label>Do you want to make your work public domain?</label>
+            <select
+                class="form-control"
                 ng-model="makeDataPublicController.creativeCommonsAllowDerivatives"
                 ng-change="makeDataPublicController.updateCreativeCommonsLicence()">
                 <option value="yes">Yes</option>
@@ -105,7 +115,10 @@
                     </a>
 
                 </h4>
-                <div style="text-align: center; margin-top: 14px">
+                 <div ng-if="makeDataPublicController.creativeCommonsPublicDomain == 'yes'" style="text-align: center; margin-top: 14px">
+                     <img ng-src="/topcat_doi_plugin/images/creative_commons/nolaw.png">
+                 </div>
+                <div ng-if="makeDataPublicController.creativeCommonsPublicDomain == 'no'" style="text-align: center; margin-top: 14px">
                     <img ng-src="/topcat_doi_plugin/images/creative_commons/cc.png">
                     <img ng-src="/topcat_doi_plugin/images/creative_commons/by.png">
                     <img ng-if="makeDataPublicController.creativeCommonsCommercial == 'no'" ng-src="/topcat_doi_plugin/images/creative_commons/nc.png">

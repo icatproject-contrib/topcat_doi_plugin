@@ -62,33 +62,39 @@
         this.description = "";
         this.isFromCart = false;
 
+        this.creativeCommonsPublicDomain = "no";
         this.creativeCommonsAllowDerivatives = "yes";
         this.creativeCommonsCommercial = "yes";
         this.creativeCommonsLicenceName = "";
         this.creativeCommonsLicenceUrl = "";
 
         this.updateCreativeCommonsLicence = function(){
-            if(this.creativeCommonsCommercial == 'yes'){
-                if(this.creativeCommonsAllowDerivatives == 'yes'){
-                    this.creativeCommonsLicenceName = "Attribution 4.0 International";
-                    this.creativeCommonsLicenceUrl = "http://creativecommons.org/licenses/by/4.0/";
-                } else if(this.creativeCommonsAllowDerivatives == 'no'){
-                    this.creativeCommonsLicenceName = "Attribution-NoDerivatives 4.0 International";
-                    this.creativeCommonsLicenceUrl = "http://creativecommons.org/licenses/by-nd/4.0/";
-                } else {
-                    this.creativeCommonsLicenceName = "Attribution-ShareAlike 4.0 International";
-                    this.creativeCommonsLicenceUrl = "http://creativecommons.org/licenses/by-sa/4.0/";
-                }
+            if(this.creativeCommonsPublicDomain == 'yes'){
+                this.creativeCommonsLicenceName = "CC0 1.0 Universal";
+                this.creativeCommonsLicenceUrl = "https://creativecommons.org/publicdomain/zero/1.0/";
             } else {
-                if(this.creativeCommonsAllowDerivatives == 'yes'){
-                    this.creativeCommonsLicenceName = "Attribution-NonCommercial 4.0 International";
-                    this.creativeCommonsLicenceUrl = "http://creativecommons.org/licenses/by-nc/4.0/";
-                } else if(this.creativeCommonsAllowDerivatives == 'no'){
-                    this.creativeCommonsLicenceName = "Attribution-NonCommercial-NoDerivatives 4.0 International";
-                    this.creativeCommonsLicenceUrl = "http://creativecommons.org/licenses/by-nc-nd/4.0/";
+                if(this.creativeCommonsCommercial == 'yes'){
+                    if(this.creativeCommonsAllowDerivatives == 'yes'){
+                        this.creativeCommonsLicenceName = "Attribution 4.0 International";
+                        this.creativeCommonsLicenceUrl = "http://creativecommons.org/licenses/by/4.0/";
+                    } else if(this.creativeCommonsAllowDerivatives == 'no'){
+                        this.creativeCommonsLicenceName = "Attribution-NoDerivatives 4.0 International";
+                        this.creativeCommonsLicenceUrl = "http://creativecommons.org/licenses/by-nd/4.0/";
+                    } else {
+                        this.creativeCommonsLicenceName = "Attribution-ShareAlike 4.0 International";
+                        this.creativeCommonsLicenceUrl = "http://creativecommons.org/licenses/by-sa/4.0/";
+                    }
                 } else {
-                    this.creativeCommonsLicenceName = "Attribution-NonCommercial-ShareAlike 4.0 International";
-                    this.creativeCommonsLicenceUrl = "http://creativecommons.org/licenses/by-nc-sa/4.0/";
+                    if(this.creativeCommonsAllowDerivatives == 'yes'){
+                        this.creativeCommonsLicenceName = "Attribution-NonCommercial 4.0 International";
+                        this.creativeCommonsLicenceUrl = "http://creativecommons.org/licenses/by-nc/4.0/";
+                    } else if(this.creativeCommonsAllowDerivatives == 'no'){
+                        this.creativeCommonsLicenceName = "Attribution-NonCommercial-NoDerivatives 4.0 International";
+                        this.creativeCommonsLicenceUrl = "http://creativecommons.org/licenses/by-nc-nd/4.0/";
+                    } else {
+                        this.creativeCommonsLicenceName = "Attribution-NonCommercial-ShareAlike 4.0 International";
+                        this.creativeCommonsLicenceUrl = "http://creativecommons.org/licenses/by-nc-sa/4.0/";
+                    }
                 }
             }
 
