@@ -37,6 +37,9 @@
     	this.releaseDate = null;
     	this.isReleaseDateOpen = false;
     	this.licence = null;
+        if(facility.doiMinter().config().licences.length == 1){
+            this.licence = facility.doiMinter().config().licences[0];
+        }
     	this.hasAcceptedLegal = false;
     	this.dateFormat = 'yyyy-MM-dd';
         var maxDate = null;

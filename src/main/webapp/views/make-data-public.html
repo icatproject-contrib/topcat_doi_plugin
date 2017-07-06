@@ -60,13 +60,18 @@
             </p>
         </div>
         <div ng-if="makeDataPublicController.state == 'legal'" class="form-group">
-        	<label>Licence</label>
+        	<label>Licence - how the public can use your data after it has been released</label>
         	<select
         		class="form-control"
         		ng-change="makeDataPublicController.updateCreativeCommonsLicence()"
         		ng-model="makeDataPublicController.licence"
-        		ng-options="licence.name for licence in makeDataPublicController.licences">
+        		ng-options="licence.name for licence in makeDataPublicController.licences"
+                ng-hide="makeDataPublicController.licences.length == 1"
+                >
             </select>
+            <div ng-if="makeDataPublicController.licences.length == 1">
+                {{makeDataPublicController.licence.name}}
+            </div>
         </div>
         <div ng-if="makeDataPublicController.state == 'legal' && makeDataPublicController.licence && makeDataPublicController.licence.name == 'Creative Commons'" class="form-group">
             <label>Allow adaptations of your work to be shared?</label>
