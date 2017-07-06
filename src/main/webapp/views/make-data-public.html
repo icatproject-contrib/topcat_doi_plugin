@@ -74,7 +74,7 @@
             </div>
         </div>
         <div ng-if="makeDataPublicController.state == 'legal' && makeDataPublicController.licence && makeDataPublicController.licence.name == 'Creative Commons'" class="form-group">
-            <label>Allow adaptations of your work to be shared?</label>
+            <label>Do you want to make your work public domain?</label>
             <select
                 class="form-control"
                 ng-model="makeDataPublicController.creativeCommonsPublicDomain"
@@ -83,8 +83,8 @@
                 <option value="no">No</option>
             </select>
         </div>
-        <div ng-if="makeDataPublicController.state == 'legal' && makeDataPublicController.licence && makeDataPublicController.licence.name == 'Creative Commons'" class="form-group">
-            <label>Do you want to make your work public domain?</label>
+        <div ng-if="makeDataPublicController.state == 'legal' && makeDataPublicController.licence && makeDataPublicController.licence.name == 'Creative Commons' && makeDataPublicController.creativeCommonsPublicDomain == 'no'" class="form-group">
+            <label>Allow adaptations of your work to be shared?</label>
             <select
                 class="form-control"
                 ng-model="makeDataPublicController.creativeCommonsAllowDerivatives"
@@ -94,7 +94,7 @@
                 <option value="sa">Yes, as long as others share alike</option>
             </select>
         </div>
-        <div ng-if="makeDataPublicController.state == 'legal' && makeDataPublicController.licence && makeDataPublicController.licence.name == 'Creative Commons'" class="form-group">
+        <div ng-if="makeDataPublicController.state == 'legal' && makeDataPublicController.licence && makeDataPublicController.licence.name == 'Creative Commons'  && makeDataPublicController.creativeCommonsPublicDomain == 'no'" class="form-group">
             <label>Allow commercial uses of your work?</label>
             <select
                 class="form-control"
