@@ -249,10 +249,12 @@
                     user.deleteAllCartItems().then(function(){
                         tc.refresh();
                         $uibModalStack.dismissAll();
+                        displayConfirmation();
                     });
                 } else {
                     tc.refresh();
                     $uibModalStack.dismissAll();
+                    displayConfirmation();
                 }
             }, function(response){
                 inform.add(response.message, {
@@ -262,6 +264,20 @@
             });
        
     	};
+
+        function displayConfirmation(){
+            var message;
+            if(that.isReleaseDate){
+                message = "Your data will be made public on " + that.releaseDate + " and a DOI has been made.";
+            } else {
+                message = "Your data is now public and a DOI has been made.";
+            }
+
+            inform.add(message, {
+                'ttl': 0,
+                'type': 'info'
+            });
+        }
 
     	this.cancel = function() {
             $uibModalInstance.dismiss('cancel');
