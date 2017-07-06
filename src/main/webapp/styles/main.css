@@ -11,3 +11,23 @@
   border-width: 1px;
 }
 
+.autocomplete {
+    margin: 0px;
+    padding: 0px;
+    list-style-type: none;
+    border-width: 0px 1px 1px 1px;
+    border-color: #ccc;
+    border-style: solid;
+    background: white;
+    position: absolute;
+    min-width: 300px;
+}
+
+.autocomplete li {
+    margin: 0px;
+    padding: 7px;
+}
+
+.autocomplete li.selected {
+    background: #eaeaea;
+}

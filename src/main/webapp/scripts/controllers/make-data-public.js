@@ -5,7 +5,7 @@
 
     var app = angular.module('topcat');
 
-    app.controller('MakeDataPublicController', function($uibModalInstance, $uibModalStack, $timeout, $q, tc, inform, datafileIds){
+    app.controller('MakeDataPublicController', function($uibModalInstance, $uibModalStack, $uibModal, $scope, $timeout, $q, tc, inform, datafileIds){
         
         if(tc.userFacilities().length > 1){
             alert("This feature can't be used with multiple facilities.");
@@ -183,10 +183,12 @@
         };
 
         this.addCreator = function(){
-            if(this.newCreator != "" && !_.includes(this.creators, this.newCreator)){
-                this.creators.push(this.newCreator);
-                this.newCreator = "";
-            }
+            $uibModal.open({
+                templateUrl: facility.doiMinter().pluginUrl() + 'views/add-creator.html',
+                controller: 'AddCreatorController as addCreatorController',
+                size : 'md',
+                scope: $scope
+            });
         };
         
     	this.isPreviousDisabled = function(){

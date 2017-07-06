@@ -25,10 +25,7 @@
                 </label>
             </div>
             <div class="input-group" style="margin-top: 7px;">
-                <input type="text" class="form-control" ng-keyup="$event.which === 13 && makeDataPublicController.addCreator();" ng-model="makeDataPublicController.newCreator">
-                <label class="input-group-addon">
                 <button class="btn btn-primary btn-xs" style="font-size: 8px;" ng-click="makeDataPublicController.addCreator()"><i class="glyphicon glyphicon-plus"></i></button>
-                </label>
             </div>
         </div>
         <div ng-if="makeDataPublicController.state == 'basic_details'" class="form-group">

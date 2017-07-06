@@ -3,11 +3,12 @@
 registerTopcatPlugin(function(pluginUrl){
 	return {
 		scripts: [
-			pluginUrl + 'scripts/controllers/make-data-public.controller.js',
-			pluginUrl + 'scripts/controllers/my-dois.controller.js',
-			pluginUrl + 'scripts/controllers/doi-landing-page.controller.js',
-			pluginUrl + 'scripts/controllers/doi-landing-page-download.controller.js',
-			pluginUrl + 'scripts/services/tc-doi-minter.service.js'
+			pluginUrl + 'scripts/controllers/add-creator.js',
+			pluginUrl + 'scripts/controllers/make-data-public.js',
+			pluginUrl + 'scripts/controllers/my-dois.js',
+			pluginUrl + 'scripts/controllers/doi-landing-page.js',
+			pluginUrl + 'scripts/controllers/doi-landing-page-download.js',
+			pluginUrl + 'scripts/services/tc-doi-minter.js'
 		],
 
 		stylesheets: [

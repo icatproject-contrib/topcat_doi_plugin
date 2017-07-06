@@ -1,0 +1,46 @@
+<div class="modal-content">
+    <div class="modal-header">
+        <h3 class="modal-title">Add Creator</h3>
+    </div>
+    <div class="modal-body">
+        <form novalidate name="addCreatorController.form">
+            <div class="form-group">
+                <label class="control-label" for="server">Creator</label>
+
+                <div class="form-group">
+                    <div class="input-group">
+                        <input
+                            type="text"
+                            class="form-control"
+                            placeholder="Enter creator's name"
+                            ng-model="addCreatorController.newCreator"
+                            ng-keydown="addCreatorController.newCreatorKeydown($event)"
+                            ng-keyup="addCreatorController.newCreatorKeyup($event)">
+                        <label class="input-group-addon">
+                            <button 
+                                class="btn btn-primary btn-xs" 
+                                style="font-size: 8px;" 
+                                ng-click="addCreatorController.addCreator()"
+                                ng-disabled="addCreatorController.candidateCreators.length != 1">
+                                <i class="glyphicon glyphicon-plus"></i>
+                            </button>
+                        </label>
+                    </div>
+                    <ul ng-if="addCreatorController.candidateCreators.length > 0" class="autocomplete">
+                        <li 
+                            ng-repeat="user in addCreatorController.candidateCreators"
+                            ng-class="{selected: user.position == addCreatorController.selectedCandidateCreatorPosition || addCreatorController.candidateCreators.length == 1}">
+                            <a ng-click="addCreatorController.addCreator(user)">
+                                    {{user.fullName}}
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+
+            </div>
+        </form>
+    </div>
+    <div class="modal-footer">
+        <button class="btn btn-warning" ng-click="addCreatorController.cancel()">Cancel</button>
+    </div>
+</div>
