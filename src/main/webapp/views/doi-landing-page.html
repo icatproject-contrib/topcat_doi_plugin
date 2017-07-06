@@ -14,8 +14,11 @@
 						<button class="btn btn-primary btn-lg disabled">Download</button>
 					</span>
 
-					<span ng-if="doiLandingPageController.isReleased && !doiLandingPageController.isValidSession" uib-tooltip="You must be signed in to access this data">
-						<button class="btn btn-primary btn-lg disabled">Download</button>
+					<span 
+						ng-if="doiLandingPageController.isReleased && !doiLandingPageController.isValidSession"
+						class="label label-info"
+						>
+						<span class=="glyphicon glyphicon-info-sign"></span> <span translate="DOI.LANDING_PAGE_DOWNLOAD_INFO"></span>
 					</span>
 
 				</p>
