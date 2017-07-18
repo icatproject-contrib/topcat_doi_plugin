@@ -100,7 +100,7 @@
                 'where dataCollection.doi != null and',
                 "titleParameter.type.name = 'title' and",
                 "releaseDateParameter.type.name = 'releaseDate' and",
-                "titleParameter.type.name = 'mintedBy' and",
+                "mintedByParameter.type.name = 'mintedBy' and",
                 '(user1.name = :user or user2.name = :user or dataCollection.createId = :user) and ',
 
                 function(){

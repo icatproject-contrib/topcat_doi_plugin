@@ -236,6 +236,8 @@
 	    	}
     	};
 
+        this.isMinting = false;
+
     	this.confirm = function(){
             var licenceName = that.licence.name;
             var licenceUrl = that.licence.url;
@@ -243,6 +245,8 @@
                 licenceName += " - " + that.creativeCommonsLicenceName;
                 licenceUrl = that.creativeCommonsLicenceUrl;
             }
+
+            this.isMinting = true;
 
             facility.doiMinter().makePublicDataCollection(that.title, that.description, that.creators, that.computedReleaseDate, licenceName, licenceUrl, investigationIds, datasetIds, datafileIds).then(function(){
                 if(that.isFromCart){
@@ -257,6 +261,9 @@
                     displayConfirmation();
                 }
             }, function(response){
+
+                this.isMinting = false;
+
                 inform.add(response.message, {
                     'ttl': 3000,
                     'type': 'danger'

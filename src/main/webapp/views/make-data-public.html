@@ -175,8 +175,11 @@
         </div>
     </div>
     <div class="modal-footer">
+
+        <span ng-if="makeDataPublicController.isMinting" class="loading collapsed"></span>
+
     	<button
-    		ng-disabled="makeDataPublicController.isPreviousDisabled()"
+    		ng-disabled="makeDataPublicController.isPreviousDisabled() || makeDataPublicController.isMinting"
     		class="btn btn-primary"
     		ng-click="makeDataPublicController.previous()"
     		translate="CART.MAKE_DATA_PUBLIC.PREVIOUS_BUTTON.TEXT">		
@@ -184,8 +187,9 @@
 
     	<button
     		ng-if="makeDataPublicController.state != 'confirm'"
-    		ng-disabled="makeDataPublicController.isNextDisabled()" 
-    		class="btn btn-primary" ng-click="makeDataPublicController.next()"
+    		ng-disabled="makeDataPublicController.isNextDisabled() || makeDataPublicController.isMinting" 
+    		class="btn btn-primary"
+            ng-click="makeDataPublicController.next()"
     		translate="CART.MAKE_DATA_PUBLIC.NEXT_BUTTON.TEXT">		
     	</button>
 
@@ -194,13 +198,15 @@
         	ng-if="makeDataPublicController.state == 'confirm'"
         	class="btn btn-primary"
         	ng-click="makeDataPublicController.confirm()"
-        	translate="CART.MAKE_DATA_PUBLIC.CONFIRM_BUTTON.TEXT">	
+        	translate="CART.MAKE_DATA_PUBLIC.CONFIRM_BUTTON.TEXT"
+            ng-disabled="makeDataPublicController.isMinting">
         </button>
 
         <button
         	class="btn btn-warning"
         	ng-click="makeDataPublicController.cancel()"
-        	translate="CART.MAKE_DATA_PUBLIC.CANCEL_BUTTON.TEXT">	
+        	translate="CART.MAKE_DATA_PUBLIC.CANCEL_BUTTON.TEXT"
+            ng-disabled="makeDataPublicController.isMinting">	
         </button>
     </div>
 </form>
