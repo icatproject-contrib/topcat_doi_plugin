@@ -101,7 +101,7 @@ public class RestApi {
     
     private static final Logger logger = LoggerFactory.getLogger(RestApi.class);
 
-    @PersistenceContext(unitName = "topcat")
+    @PersistenceContext(unitName = "topcat_doi_plugin")
     EntityManager em;
     
     /**

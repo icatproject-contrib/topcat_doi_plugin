@@ -8,8 +8,9 @@ import re
 def uninstall():
     app = actions.getAppName("topcat_doi_plugin")
     if app: actions.undeploy(app)
+    actions.unregisterDB("topcat_doi_plugin")
 
-actions, arg, props = getActions("topcat_doi_plugin-setup.properties", [])
+actions, arg, props = getActions("topcat_doi_plugin-setup.properties", ["db.driver", "db.url", "db.username", "db.password"])
 
 prop_name = "topcat_doi_plugin.properties"
 prop_list = []
@@ -23,6 +24,8 @@ if arg == "INSTALL":
            
     try:
         uninstall()
+
+        actions.registerDB("topcat_doi_plugin", props["db.driver"], props["db.url"], props["db.username"], props["db.password"])
 
         files = []
         

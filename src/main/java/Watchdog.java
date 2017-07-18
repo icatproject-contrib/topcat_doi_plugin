@@ -34,7 +34,7 @@ public class Watchdog {
   private Map<Long, Date> lastChecks = new HashMap<Long, Date>();
   private AtomicBoolean busy = new AtomicBoolean(false);
 
-  @PersistenceContext(unitName="topcat")
+  @PersistenceContext(unitName="topcat_doi_plugin")
   EntityManager em;
 
   @EJB
