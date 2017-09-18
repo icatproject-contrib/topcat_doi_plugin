@@ -52,5 +52,5 @@ You will also need to add the following to topcat.json"
         "maxReleaseDays"" 1095
     }
 
-Please note the "Creative Commons" licence is a special licence in that it will enable a special Creative Commons interface, in this case the "url" and "terms" fields are node are not required.
+Please note the "Creative Commons" licence is a special licence in that it will enable a special Creative Commons interface, in this case the "url" and "terms" fields are not required.
 
