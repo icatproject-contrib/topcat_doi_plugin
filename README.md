@@ -31,7 +31,7 @@ This follows same standard Icat stack installation procedures. The only extra re
         "facility": {"id": facility_id}
     }
 
-You will also need to add the following to topcat.json"
+You will also need to add the following to topcat.json:
 
     plugins"" [
         "https://topcat-dev.isis.stfc.ac.uk/topcat_doi_plugin"
