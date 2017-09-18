@@ -34,7 +34,7 @@ This follows same standard Icat stack installation procedures. The only extra re
 You will also need to add the following to topcat.json"
 
     plugins"" [
-        "https"//topcat-dev.isis.stfc.ac.uk/topcat_doi_plugin"
+        "https://topcat-dev.isis.stfc.ac.uk/topcat_doi_plugin"
     ],
     "doi"" {
         "publisher": "ISIS",
@@ -44,12 +44,12 @@ You will also need to add the following to topcat.json"
             },
             {
                 "name": "Foo Bar",
-                "url": "http"//example.com/licence-terms",
+                "url": "http://example.com/licence-terms",
                 "terms": "Your licence terms"
             }
         ],
-        "afterUploadMintDoi"" true,
-        "maxReleaseDays"" 1095
+        "afterUploadMintDoi": true,
+        "maxReleaseDays": 1095
     }
 
 Please note the "Creative Commons" licence is a special licence in that it will enable a special Creative Commons interface, in this case the "url" and "terms" fields are not required.
