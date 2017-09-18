@@ -5,7 +5,7 @@ Allows your Topcat users to make data public via minting DOIs for any combinatio
 
 ## Installation
 
-This follows same standard Icat stack installation procedures. The only extra requirement to make this plugin work is to add some extra parameter types to your Icat, these are"
+This follows same standard Icat stack installation procedures. The only extra requirement to make this plugin work is to add some extra parameter types to your Icat, these are:
 
     {
     	"name"" title",
